@@ -1,0 +1,14 @@
+{
+  "name": "gfii",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/auth.js --bundle --outfile=auth.bundle.js --format=iife --target=es2020 --minify"
+  },
+  "dependencies": {
+    "@netlify/identity": "^0.1.0",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

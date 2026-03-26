@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GFII Admin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<nav class="nav">
+  <h1>GFII — Admin</h1>
+  <button id="logout-btn" class="btn-logout" hidden>Log Out</button>
+</nav>
+
+<main>
+  <h2>Applications</h2>
+  <p>Review submissions inside the Netlify dashboard.</p>
+
+  <section class="portal-grid">
+    <div class="card">
+      <h3>Applications</h3>
+      <a href="https://app.netlify.com" target="_blank">
+        Open Netlify Forms
+      </a>
+    </div>
+
+    <div class="card">
+      <h3>Members</h3>
+      <a href="https://app.netlify.com" target="_blank">
+        Manage Identity Users
+      </a>
+    </div>
+  </section>
+</main>
+
+<script src="auth.bundle.js"></script>
+<script>
+  window.addEventListener('gfii:ready', function (e) {
+    if (!e.detail.user) {
+      window.location.href = '/login.html';
+    } else {
+      document.getElementById('logout-btn').hidden = false;
+    }
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', async function () {
+    await GFII.logout();
+    window.location.href = '/login.html';
+  });
+</script>
+
+</body>
+</html>

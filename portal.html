@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GFII Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <h1>GFII Portal</h1>
+    <button id="logout-btn" class="btn-logout" hidden>Log Out</button>
+  </nav>
+
+  <main>
+    <section class="portal-hero">
+      <h2>Member Portal</h2>
+      <p>Welcome to the private layer.</p>
+    </section>
+
+    <section class="portal-grid">
+      <div class="card">Upcoming Events</div>
+      <div class="card">Community Discussions</div>
+      <div class="card">Member Directory</div>
+    </section>
+  </main>
+
+  <script src="auth.bundle.js"></script>
+  <script>
+      window.addEventListener('gfii:ready', async function (e) {
+
+          const user = e.detail.user;
+
+          // Not logged in
+          if (!user) {
+              location.href = '/login.html';
+              return;
+          }
+
+          try {
+              const profile = await GFII.getProfile();
+
+              // Not approved
+              if (!profile.approved) {
+                  location.href = '/not-approved.html';
+                  return;
+              }
+
+              // Needs onboarding
+              if (!profile.onboarding_complete) {
+                  location.href = '/onboarding.html';
+                  return;
+              }
+
+              // SUCCESS → allow portal
+              document.getElementById('logout-btn').hidden = false;
+
+          } catch (err) {
+              console.error(err);
+              location.href = '/login.html';
+          }
+
+      });
+  </script>
+
+</body>
+</html>

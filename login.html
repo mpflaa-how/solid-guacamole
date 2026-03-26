@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GFII Login</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <main>
+    <h2>Member Login</h2>
+    <p>Access is available to accepted members only.</p>
+
+    <div id="auth-message" class="message" hidden></div>
+
+    <form id="login-form" class="auth-form">
+      <input id="login-email" type="email" placeholder="Email" required>
+      <input id="login-password" type="password" placeholder="Password" required>
+      <button type="submit">Log In</button>
+      <p class="auth-links">
+        <a href="#" id="show-recovery">Forgot password?</a>
+        &middot;
+        <a href="/">Home</a>
+      </p>
+    </form>
+
+    <form id="recovery-form" class="auth-form" hidden>
+      <input id="recovery-email" type="email" placeholder="Email" required>
+      <button type="submit">Send Recovery Email</button>
+      <p class="auth-links">
+        <a href="#" id="show-login">Back to login</a>
+      </p>
+    </form>
+
+    <form id="reset-form" class="auth-form" hidden>
+      <p>Set your new password:</p>
+      <input id="reset-password" type="password" placeholder="New Password" required minlength="6">
+      <button type="submit">Update Password</button>
+    </form>
+  </main>
+
+  <script src="auth.bundle.js"></script>
+  <script>
+    var msg = document.getElementById('auth-message');
+    var loginForm = document.getElementById('login-form');
+    var recoveryForm = document.getElementById('recovery-form');
+    var resetForm = document.getElementById('reset-form');
+
+    function showMessage(text, type) {
+      msg.textContent = text;
+      msg.className = 'message ' + type;
+      msg.hidden = false;
+    }
+
+    function hideAllForms() {
+      loginForm.hidden = true;
+      recoveryForm.hidden = true;
+      resetForm.hidden = true;
+    }
+
+    // Login
+    loginForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var email = document.getElementById('login-email').value;
+      var password = document.getElementById('login-password').value;
+      var btn = loginForm.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Logging in\u2026';
+      msg.hidden = true;
+      try {
+        await GFII.login(email, password);
+        window.location.href = '/portal.html';
+      } catch (err) {
+        if (err instanceof GFII.AuthError) {
+          showMessage(err.status === 401 ? 'Invalid email or password.' : err.message, 'error');
+        } else {
+          showMessage('Something went wrong. Please try again.', 'error');
+        }
+        btn.disabled = false;
+        btn.textContent = 'Log In';
+      }
+    });
+
+    // Recovery request
+    recoveryForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var email = document.getElementById('recovery-email').value;
+      var btn = recoveryForm.querySelector('button');
+      btn.disabled = true;
+      try {
+        await GFII.recover(email);
+        showMessage('Check your email for a recovery link.', 'success');
+      } catch (err) {
+        showMessage('Could not send recovery email. Try again.', 'error');
+      }
+      btn.disabled = false;
+    });
+
+    // Password reset (after clicking recovery link in email)
+    resetForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var password = document.getElementById('reset-password').value;
+      var btn = resetForm.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Updating\u2026';
+      try {
+        await GFII.resetPassword(password);
+        showMessage('Password updated! Redirecting\u2026', 'success');
+        setTimeout(function () { window.location.href = '/portal.html'; }, 1500);
+      } catch (err) {
+        showMessage('Could not update password. Try again.', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Update Password';
+      }
+    });
+
+    // Toggle forms
+    document.getElementById('show-recovery').addEventListener('click', function (e) {
+      e.preventDefault();
+      hideAllForms();
+      recoveryForm.hidden = false;
+      msg.hidden = true;
+    });
+
+    document.getElementById('show-login').addEventListener('click', function (e) {
+      e.preventDefault();
+      hideAllForms();
+      loginForm.hidden = false;
+      msg.hidden = true;
+    });
+
+    // Show password reset form on recovery callback
+    window.addEventListener('gfii:recovery', function () {
+      hideAllForms();
+      resetForm.hidden = false;
+      showMessage('Set a new password below.', 'success');
+    });
+
+    // If already logged in, redirect to portal
+    window.addEventListener('gfii:ready', function (e) {
+      if (e.detail.user) {
+        window.location.href = '/portal.html';
+      }
+    });
+  </script>
+
+</body>
+</html>

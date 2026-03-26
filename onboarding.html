@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GFII Onboarding</title>
+</head>
+<body>
+
+    <h1>Welcome to GFII</h1>
+    <p>Complete your identity.</p>
+
+    <form id="onboarding-form">
+        <input id="name" placeholder="Full Name" required /><br><br>
+
+        <input id="alias" placeholder="Alias (optional)" /><br><br>
+
+        <textarea id="statement"
+                  placeholder="What are you becoming?"
+                  required></textarea><br><br>
+
+        <select id="focus" required>
+            <option value="">Select Focus</option>
+            <option>Building</option>
+            <option>Learning</option>
+            <option>Networking</option>
+        </select><br><br>
+
+        <button type="submit">Enter GFII</button>
+    </form>
+
+    <script src="/src/auth.js"></script>
+
+    <script>
+document.getElementById('onboarding-form')
+.addEventListener('submit', async (e) => {
+
+  e.preventDefault();
+
+  const body = {
+    name: name.value,
+    alias: alias.value,
+    statement: statement.value,
+    focus: focus.value
+  };
+
+  await fetch('/.netlify/functions/completeOnboarding', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+
+  location.href = '/portal.html';
+});
+    </script>
+
+</body>
+</html>
