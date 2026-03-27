@@ -3,42 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GFII Portal</title>
+  <title>GFII Dashboard</title>
   <link rel="stylesheet" href="styles.css">
+
+  <style>
+    .dashboard {
+      max-width: 1100px;
+      margin: 40px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .card h3 {
+      margin-bottom: 16px;
+      color: #c9a96e;
+      font-size: 0.9rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .profile-name {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .profile-statement {
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(201,169,110,0.15);
+      color: #c9a96e;
+      font-size: 0.8rem;
+    }
+
+    .member {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .member:last-child {
+      border-bottom: none;
+    }
+
+    .member strong {
+      color: #fff;
+    }
+
+    .member p {
+      margin: 4px 0;
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .member a {
+      font-size: 0.85rem;
+    }
+
+    .status-box {
+      font-size: 0.95rem;
+      color: #bbb;
+      line-height: 1.6;
+    }
+  </style>
 </head>
 
 <body>
 
 <nav class="nav">
-  <h1>GFII</h1>
+  <h1 class="nav-brand">GFII</h1>
   <button id="logout-btn" class="btn-logout" hidden>Log Out</button>
 </nav>
 
-<main class="portal-grid">
+<main class="dashboard">
 
-  <!-- LEFT: Profile -->
-  <section class="card" id="profile-section">
-    <h3>Your Profile</h3>
+  <!-- PROFILE -->
+  <section class="card">
+    <h3>Your Identity</h3>
     <div id="profile"></div>
   </section>
 
-  <!-- CENTER: Feed -->
-  <section class="card" id="feed-section">
-    <h3>Feed</h3>
-
-    <!-- Post Composer -->
-    <form id="post-form">
-      <textarea id="post-content" placeholder="Share something..." required></textarea>
-      <button type="submit">Post</button>
-    </form>
-
-    <div id="feed"></div>
+  <!-- STATUS -->
+  <section class="card">
+    <h3>Status</h3>
+    <div id="status"></div>
   </section>
 
-  <!-- RIGHT: Member Discovery -->
-  <section class="card" id="discovery-section">
-    <h3>Member Discovery</h3>
+  <!-- MEMBERS -->
+  <section class="card">
+    <h3>Members</h3>
     <div id="members"></div>
+  </section>
+
+  <!-- FUTURE ACTIONS -->
+  <section class="card">
+    <h3>Access</h3>
+    <div class="status-box">
+      <p>✔ You are an approved member</p>
+      <p>✔ Profile initialized</p>
+      <p style="margin-top:10px;">More features unlocking soon.</p>
+    </div>
   </section>
 
 </main>
@@ -52,21 +122,15 @@ const supabase = createClient(
 );
 
 const logoutBtn = document.getElementById('logout-btn');
-const feedEl = document.getElementById('feed');
 const profileEl = document.getElementById('profile');
-const postForm = document.getElementById('post-form');
+const statusEl = document.getElementById('status');
 const membersEl = document.getElementById('members');
 
 let currentUser;
 
 // ---------------- AUTH + GATING ----------------
-async function initPortal() {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError) {
-    console.error(sessionError);
-    location.href = '/login.html';
-    return;
-  }
+async function init() {
+  const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
     location.href = '/login.html';
@@ -75,24 +139,21 @@ async function initPortal() {
 
   currentUser = session.user;
   const email = currentUser.email.toLowerCase().trim();
-  console.log("Current user email:", email);
 
-  // Check approved users (case-insensitive)
-  const { data: approved, error: approvalError } = await supabase
+  // ✅ APPROVAL CHECK
+  const { data: approved } = await supabase
     .from('approved_users')
     .select('*')
     .ilike('email', email)
     .maybeSingle();
-
-  console.log("Approved record:", approved, "Error:", approvalError);
 
   if (!approved) {
     location.href = '/not-approved.html';
     return;
   }
 
-  // Check onboarding
-  const { data: profile, error: profileError } = await supabase
+  // ✅ PROFILE CHECK
+  const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', currentUser.id)
@@ -104,94 +165,42 @@ async function initPortal() {
   }
 
   logoutBtn.hidden = false;
+
   renderProfile(profile);
-  loadFeed();
+  renderStatus(profile);
   loadMembers();
 }
 
 // ---------------- PROFILE ----------------
 function renderProfile(profile) {
   profileEl.innerHTML = `
-    <p><strong>${profile.name}</strong></p>
-    <p>${profile.statement || ''}</p>
-    <p><em>${profile.focus}</em></p>
-    <p>Reputation: ${profile.reputation || 0}</p>
+    <div class="profile-name">${profile.name}</div>
+    <div class="profile-statement">${profile.statement || ''}</div>
+    <div class="badge">${profile.focus}</div>
   `;
 }
 
-// ---------------- FEED ----------------
-async function loadFeed() {
-  const { data: posts, error } = await supabase
-    .from('posts')
-    .select('*, profiles(name, reputation), reactions(*)')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    feedEl.innerHTML = '<p>Error loading feed.</p>';
-    return;
-  }
-
-  if (!posts.length) {
-    feedEl.innerHTML = '<p>No posts yet.</p>';
-    return;
-  }
-
-  feedEl.innerHTML = '';
-
-  posts.forEach(post => {
-    const div = document.createElement('div');
-    div.className = 'card post-card';
-    div.innerHTML = `
-      <p><strong>${post.profiles?.name || 'Unknown'}</strong> (${post.profiles?.reputation || 0} rep)</p>
-      <p>${post.content}</p>
-      <div class="reaction-bar">
-        <button class="like-btn" data-post="${post.id}">👍 ${post.reactions?.length || 0}</button>
-      </div>
-    `;
-    feedEl.appendChild(div);
-  });
-
-  // Attach reaction listeners
-  document.querySelectorAll('.like-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const postId = btn.dataset.post;
-      const { error } = await supabase.from('reactions').insert([{ post_id: postId, user_id: currentUser.id }]);
-      if (!error) loadFeed();
-    });
-  });
+// ---------------- STATUS ----------------
+function renderStatus(profile) {
+  statusEl.innerHTML = `
+    <div class="status-box">
+      <p><strong>Alias:</strong> ${profile.alias || 'Not set'}</p>
+      <p><strong>Focus:</strong> ${profile.focus}</p>
+      <p><strong>Member Since:</strong> ${new Date(profile.created_at).toLocaleDateString()}</p>
+    </div>
+  `;
 }
 
-// ---------------- POST CREATE ----------------
-postForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const content = document.getElementById('post-content').value.trim();
-  if (!content) return;
-
-  const { error } = await supabase.from('posts').insert([{
-    content,
-    user_id: currentUser.id
-  }]);
-
-  if (error) {
-    alert('Failed to post');
-    return;
-  }
-
-  postForm.reset();
-  loadFeed();
-});
-
-// ---------------- MEMBER DISCOVERY ----------------
+// ---------------- MEMBERS ----------------
 async function loadMembers() {
-  const { data: members, error } = await supabase
+  const { data: members } = await supabase
     .from('profiles')
     .select('*')
     .neq('id', currentUser.id)
-    .order('reputation', { ascending: false })
     .limit(5);
 
-  if (error) {
-    membersEl.innerHTML = '<p>Error loading members.</p>';
+  if (!members || !members.length) {
+    membersEl.innerHTML = '<p>No members yet.</p>';
     return;
   }
 
@@ -199,11 +208,11 @@ async function loadMembers() {
 
   members.forEach(member => {
     const div = document.createElement('div');
-    div.className = 'member-card';
+    div.className = 'member';
     div.innerHTML = `
-      <p><strong>${member.name}</strong> (${member.reputation || 0} rep)</p>
+      <strong>${member.name}</strong>
       <p>${member.focus || ''}</p>
-      <a href="/profile.html?id=${member.id}">View Profile</a>
+      <a href="/profile.html?id=${member.id}">View</a>
     `;
     membersEl.appendChild(div);
   });
@@ -216,7 +225,7 @@ logoutBtn.addEventListener('click', async () => {
 });
 
 // INIT
-initPortal();
+init();
 </script>
 
 </body>
