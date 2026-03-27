@@ -1,40 +1,52 @@
-const pool = require("../lib/db");
+// /.netlify/functions/completeOnboarding.js
+import { createClient } from '@supabase/supabase-js';
 
-exports.handler = async (event, context) => {
+const supabaseUrl = 'https://adkljqadhghboezfazxz.supabase.co';
+const supabaseServiceRoleKey = process.env.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFka2xqcWFkaGdoYm9lemZhenh6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDQwNjQ1OSwiZXhwIjoyMDg5OTgyNDU5fQ.1N-mUaYN2R7eJCp2yTgLow1rIP7_JhdVNlLpg24R5no; // 🔒 Never expose in frontend
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    const user = context.clientContext?.user;
+export async function handler(event) {
+  try {
+    // 1️⃣ Parse request
+    const { name, alias, statement, focus } = JSON.parse(event.body);
 
-    if (!user) {
-        return { statusCode: 401 };
+    // 2️⃣ Get JWT from Authorization header
+    const authHeader = event.headers.authorization || '';
+    const token = authHeader.replace('Bearer ', '').trim();
+    if (!token) {
+      return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorized: no token provided.' }) };
     }
 
-    const data = JSON.parse(event.body);
+    // 3️⃣ Validate token and get user
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorized: invalid token.' }) };
+    }
 
-    await pool.query(
-        `
-    insert into profiles
-    (id, email, name, alias, statement, focus, onboarding_complete)
-    values ($1,$2,$3,$4,$5,$6,true)
-    on conflict (id)
-    do update set
-      name = excluded.name,
-      alias = excluded.alias,
-      statement = excluded.statement,
-      focus = excluded.focus,
-      onboarding_complete = true;
-    `,
-        [
-            user.sub,
-            user.email,
-            data.name,
-            data.alias,
-            data.statement,
-            data.focus
-        ]
-    );
+    // 4️⃣ Update the user's profile
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        name: name.trim(),
+        alias: alias?.trim() || null,
+        statement: statement.trim(),
+        focus: focus,
+        onboarding_complete: true
+      })
+      .eq('id', user.id);
 
+    if (updateError) {
+      return { statusCode: 500, body: JSON.stringify({ message: updateError.message }) };
+    }
+
+    // ✅ Success
     return {
-        statusCode: 200,
-        body: JSON.stringify({ success: true })
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Onboarding completed successfully!' })
     };
-};
+
+  } catch (err) {
+    console.error('completeOnboarding error:', err);
+    return { statusCode: 500, body: JSON.stringify({ message: 'Server error' }) };
+  }
+}
