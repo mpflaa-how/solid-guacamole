@@ -16,39 +16,105 @@
 
 <main>
   <h2>Applications</h2>
-  <p>Review submissions inside the Netlify dashboard.</p>
-
-  <section class="portal-grid">
-    <div class="card">
-      <h3>Applications</h3>
-      <a href="https://app.netlify.com" target="_blank">
-        Open Netlify Forms
-      </a>
-    </div>
-
-    <div class="card">
-      <h3>Members</h3>
-      <a href="https://app.netlify.com" target="_blank">
-        Manage Identity Users
-      </a>
-    </div>
-  </section>
+  <div id="applications-container">
+    <p>Loading applications…</p>
+  </div>
 </main>
 
-<script src="auth.bundle.js"></script>
-<script>
-  window.addEventListener('gfii:ready', function (e) {
-    if (!e.detail.user) {
-      window.location.href = '/login.html';
-    } else {
-      document.getElementById('logout-btn').hidden = false;
-    }
-  });
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  document.getElementById('logout-btn').addEventListener('click', async function () {
-    await GFII.logout();
+  const supabaseUrl = 'https://adkljqadhghboezfazxz.supabase.co';
+  const supabaseKey = 'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6';
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const logoutBtn = document.getElementById('logout-btn');
+  const container = document.getElementById('applications-container');
+
+  async function checkAdmin() {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData?.session?.user;
+    if (!user) {
+      window.location.href = '/login.html';
+      return null;
+    }
+    logoutBtn.hidden = false;
+    return user;
+  }
+
+  logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut();
     window.location.href = '/login.html';
   });
+
+  async function loadApplications() {
+    container.innerHTML = '<p>Loading applications…</p>';
+    const { data: apps, error } = await supabase
+      .from('applications')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      container.innerHTML = `<p>Error loading applications: ${error.message}</p>`;
+      return;
+    }
+
+    if (!apps.length) {
+      container.innerHTML = '<p>No pending applications.</p>';
+      return;
+    }
+
+    container.innerHTML = '';
+    apps.forEach(app => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <h3>${app.name}</h3>
+        <p><strong>Email:</strong> ${app.email}</p>
+        <p><strong>Working On:</strong> ${app.working_on}</p>
+        <p><strong>Why Join:</strong> ${app.why_join}</p>
+        <p><strong>Who They Want:</strong> ${app.who_they_want}</p>
+        <button class="approve-btn">Approve</button>
+        <button class="reject-btn">Reject</button>
+      `;
+
+      const approveBtn = card.querySelector('.approve-btn');
+      const rejectBtn = card.querySelector('.reject-btn');
+
+      approveBtn.addEventListener('click', async () => {
+        // 1️⃣ Update application status
+        await supabase
+          .from('applications')
+          .update({ status: 'approved' })
+          .eq('id', app.id);
+
+        // 2️⃣ Add to approved_users table
+        await supabase
+          .from('approved_users')
+          .insert([{ email: app.email }])
+          .select();
+
+        card.remove();
+      });
+
+      rejectBtn.addEventListener('click', async () => {
+        await supabase
+          .from('applications')
+          .update({ status: 'rejected' })
+          .eq('id', app.id);
+        card.remove();
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  // Initialize
+  (async () => {
+    const user = await checkAdmin();
+    if (user) loadApplications();
+  })();
 </script>
 
 </body>
