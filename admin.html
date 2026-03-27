@@ -24,6 +24,7 @@
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+  // Supabase public key (only safe to read public tables)
   const supabaseUrl = 'https://adkljqadhghboezfazxz.supabase.co';
   const supabaseKey = 'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6';
   const supabase = createClient(supabaseUrl, supabaseKey);
@@ -31,12 +32,12 @@
   const logoutBtn = document.getElementById('logout-btn');
   const container = document.getElementById('applications-container');
 
-  // ✅ Only these emails can access the admin panel
+  // ✅ Only these emails can access admin panel
   const ADMIN_EMAILS = ['Mpflaa@gmail.com', 'airdogar@gmail.com'];
 
   async function checkAdmin() {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const user = sessionData?.session?.user;
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
 
     if (!user || !ADMIN_EMAILS.includes(user.email)) {
       alert('Access denied. You are not an admin.');
@@ -55,6 +56,7 @@
 
   async function loadApplications() {
     container.innerHTML = '<p>Loading applications…</p>';
+
     const { data: apps, error } = await supabase
       .from('applications')
       .select('*')
@@ -85,29 +87,56 @@
         <button class="reject-btn">Reject</button>
       `;
 
+      // ✅ Approve via serverless function
       card.querySelector('.approve-btn').addEventListener('click', async () => {
-        await supabase.from('applications').update({ status: 'approved' }).eq('id', app.id);
-        await supabase.from('approved_users').insert([{ email: app.email }]).select();
-        card.remove();
+        try {
+          const res = await fetch('/.netlify/functions/approveuser', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: app.email })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.approved) throw new Error('Approval failed');
+
+          // Update application status in public table
+          await supabase.from('applications').update({ status: 'approved' }).eq('id', app.id);
+          card.remove();
+        } catch (err) {
+          alert(err.message || 'Error approving user');
+          console.error(err);
+        }
       });
 
+      // ✅ Reject via serverless function
       card.querySelector('.reject-btn').addEventListener('click', async () => {
-        await supabase.from('applications').update({ status: 'rejected' }).eq('id', app.id);
-        card.remove();
+        try {
+          const res = await fetch('/.netlify/functions/rejectuser', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: app.email })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.rejected) throw new Error('Rejection failed');
+
+          // Update application status
+          await supabase.from('applications').update({ status: 'rejected' }).eq('id', app.id);
+          card.remove();
+        } catch (err) {
+          alert(err.message || 'Error rejecting user');
+          console.error(err);
+        }
       });
 
       container.appendChild(card);
     });
   }
 
+  // Initialize admin page
   (async () => {
     const user = await checkAdmin();
     if (user) loadApplications();
   })();
 </script>
-
-</body>
-</html>
 
 </body>
 </html>
