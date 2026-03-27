@@ -1,33 +1,54 @@
-window.addEventListener('gfii:ready', async function (e) {
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  const user = e.detail.user;
+const supabaseUrl = 'https://adkljqadhghboezfazxz.supabase.co';
+const supabaseKey = 'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-  if (!user) {
+const logoutBtn = document.getElementById('logout-btn');
+
+async function initPortal() {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
     location.href = '/login.html';
     return;
   }
 
-  try {
-    await user.getUserData(); // 🔥 validates session
+  const email = session.user.email;
 
-    const metadata = user.user_metadata || {};
+  // Check if user is approved
+  const { data: approved, error } = await supabase
+    .from('approved_users')
+    .select('email, onboarding_complete')
+    .eq('email', email)
+    .single();
 
-    if (!metadata.approved) {
-      location.href = '/not-approved.html';
-      return;
-    }
-
-    if (!metadata.onboarding_complete) {
-      location.href = '/onboarding.html';
-      return;
-    }
-
-    // ✅ SUCCESS
-    document.getElementById('logout-btn').hidden = false;
-
-  } catch (err) {
-    console.error(err);
+  if (error) {
+    console.error(error);
     location.href = '/login.html';
+    return;
   }
 
+  if (!approved) {
+    location.href = '/not-approved.html';
+    return;
+  }
+
+  if (!approved.onboarding_complete) {
+    location.href = '/onboarding.html';
+    return;
+  }
+
+  // ✅ SUCCESS: show logout button
+  logoutBtn.hidden = false;
+}
+
+logoutBtn.addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  location.href = '/login.html';
 });
+
+// Initialize
+initPortal();
+</script>
