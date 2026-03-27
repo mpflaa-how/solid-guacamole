@@ -8,26 +8,27 @@
 </head>
 <body>
 
+  <nav class="nav">
+    <h1>GFII Onboarding</h1>
+    <button id="logout-btn" hidden>Log Out</button>
+  </nav>
+
   <main>
-    <h1>Welcome to GFII</h1>
-    <p>Complete your profile to access the portal.</p>
+    <h2>Complete Your Identity</h2>
+    <p>Fill in the details below to enter the portal.</p>
 
     <form id="onboarding-form">
-      <label for="name">Full Name *</label><br>
-      <input id="name" type="text" placeholder="Full Name" required /><br><br>
+      <input id="name" placeholder="Full Name" required /><br><br>
 
-      <label for="alias">Alias (optional)</label><br>
-      <input id="alias" type="text" placeholder="Alias" /><br><br>
+      <input id="alias" placeholder="Alias (optional)" /><br><br>
 
-      <label for="statement">What are you becoming? *</label><br>
-      <textarea id="statement" placeholder="Your statement" required></textarea><br><br>
+      <textarea id="statement" placeholder="What are you becoming?" required></textarea><br><br>
 
-      <label for="focus">Focus *</label><br>
       <select id="focus" required>
         <option value="">Select Focus</option>
-        <option value="Building">Building</option>
-        <option value="Learning">Learning</option>
-        <option value="Networking">Networking</option>
+        <option>Building</option>
+        <option>Learning</option>
+        <option>Networking</option>
       </select><br><br>
 
       <button type="submit">Enter GFII</button>
@@ -43,71 +44,68 @@
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const form = document.getElementById('onboarding-form');
-    const message = document.getElementById('form-message');
+    const msg = document.getElementById('form-message');
+    const logoutBtn = document.getElementById('logout-btn');
 
-    function showMessage(text, type='info') {
-      message.textContent = text;
-      message.className = 'message ' + type;
-      message.hidden = false;
+    function showMessage(text, type = 'info') {
+      msg.textContent = text;
+      msg.className = 'message ' + type;
+      msg.hidden = false;
     }
 
-    async function getSessionUser() {
-      const { data } = await supabase.auth.getSession();
-      return data.session?.user || null;
+    // Show logout button if logged in
+    const session = await supabase.auth.getSession();
+    const user = session.data.session?.user;
+    if (!user) {
+      location.href = '/login.html';
+    } else {
+      logoutBtn.hidden = false;
     }
+
+    logoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      location.href = '/login.html';
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      message.hidden = true;
-
-      const user = await getSessionUser();
-      if (!user) {
-        showMessage('You must be logged in to complete onboarding.', 'error');
-        return;
-      }
+      msg.hidden = true;
 
       const body = {
         name: form.name.value.trim(),
-        alias: form.alias.value.trim(),
+        alias: form.alias.value.trim() || null,
         statement: form.statement.value.trim(),
         focus: form.focus.value
       };
 
-      if (!body.name || !body.statement || !body.focus) {
-        showMessage('Please fill out all required fields.', 'error');
-        return;
-      }
-
       try {
+        const token = (await supabase.auth.getSession()).data.session.access_token;
+
         const res = await fetch('/.netlify/functions/completeOnboarding', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user.access_token}`
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(body)
         });
 
+        const data = await res.json();
+
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.message || 'Failed to complete onboarding.');
+          showMessage(data.message || 'Failed to complete onboarding.', 'error');
+          return;
         }
 
-        // ✅ Success
-        location.href = '/portal.html';
+        showMessage('Onboarding completed! Redirecting…', 'success');
+        setTimeout(() => location.href = '/portal.html', 1500);
 
       } catch (err) {
         console.error(err);
-        showMessage(err.message, 'error');
+        showMessage('Unexpected error occurred.', 'error');
       }
     });
   </script>
-
-</body>
-</html>
-  location.href = '/portal.html';
-});
-    </script>
 
 </body>
 </html>
