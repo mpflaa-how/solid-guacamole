@@ -40,14 +40,19 @@
     </form>
   </main>
 
-  <script src="auth.bundle.js"></script>
-  <script>
-    var msg = document.getElementById('auth-message');
-    var loginForm = document.getElementById('login-form');
-    var recoveryForm = document.getElementById('recovery-form');
-    var resetForm = document.getElementById('reset-form');
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    function showMessage(text, type) {
+    const supabaseUrl = 'https://adkljqadhghboezfazxz.supabase.co';
+    const supabaseKey = 'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const loginForm = document.getElementById('login-form');
+    const recoveryForm = document.getElementById('recovery-form');
+    const resetForm = document.getElementById('reset-form');
+    const msg = document.getElementById('auth-message');
+
+    function showMessage(text, type='info') {
       msg.textContent = text;
       msg.className = 'message ' + type;
       msg.hidden = false;
@@ -57,91 +62,95 @@
       loginForm.hidden = true;
       recoveryForm.hidden = true;
       resetForm.hidden = true;
+      msg.hidden = true;
     }
 
     // Login
-    loginForm.addEventListener('submit', async function (e) {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      var email = document.getElementById('login-email').value;
-      var password = document.getElementById('login-password').value;
-      var btn = loginForm.querySelector('button');
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const btn = loginForm.querySelector('button');
       btn.disabled = true;
-      btn.textContent = 'Logging in\u2026';
+      btn.textContent = 'Logging in…';
       msg.hidden = true;
+
       try {
-        await GFII.login(email, password);
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+
+        if (!data.user.email_confirmed_at) {
+          showMessage('Please confirm your email before logging in.', 'error');
+          btn.disabled = false;
+          btn.textContent = 'Log In';
+          return;
+        }
+
+        // Redirect on successful login
         window.location.href = '/portal.html';
       } catch (err) {
-        if (err instanceof GFII.AuthError) {
-          showMessage(err.status === 401 ? 'Invalid email or password.' : err.message, 'error');
-        } else {
-          showMessage('Something went wrong. Please try again.', 'error');
-        }
+        showMessage(err.message || 'Login failed. Check your credentials.', 'error');
         btn.disabled = false;
         btn.textContent = 'Log In';
       }
     });
 
-    // Recovery request
-    recoveryForm.addEventListener('submit', async function (e) {
+    // Recovery
+    recoveryForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      var email = document.getElementById('recovery-email').value;
-      var btn = recoveryForm.querySelector('button');
+      const email = document.getElementById('recovery-email').value;
+      const btn = recoveryForm.querySelector('button');
       btn.disabled = true;
+
       try {
-        await GFII.recover(email);
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/login.html' });
+        if (error) throw error;
         showMessage('Check your email for a recovery link.', 'success');
       } catch (err) {
-        showMessage('Could not send recovery email. Try again.', 'error');
+        showMessage(err.message || 'Could not send recovery email.', 'error');
       }
+
       btn.disabled = false;
     });
 
-    // Password reset (after clicking recovery link in email)
-    resetForm.addEventListener('submit', async function (e) {
+    // Password reset (from recovery link)
+    resetForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      var password = document.getElementById('reset-password').value;
-      var btn = resetForm.querySelector('button');
+      const password = document.getElementById('reset-password').value;
+      const btn = resetForm.querySelector('button');
       btn.disabled = true;
-      btn.textContent = 'Updating\u2026';
+      btn.textContent = 'Updating…';
+
       try {
-        await GFII.resetPassword(password);
-        showMessage('Password updated! Redirecting\u2026', 'success');
-        setTimeout(function () { window.location.href = '/portal.html'; }, 1500);
+        // Supabase auto-handles recovery token from URL
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw error;
+
+        showMessage('Password updated! Redirecting…', 'success');
+        setTimeout(() => window.location.href = '/login.html', 1500);
       } catch (err) {
-        showMessage('Could not update password. Try again.', 'error');
+        showMessage(err.message || 'Could not update password.', 'error');
         btn.disabled = false;
         btn.textContent = 'Update Password';
       }
     });
 
     // Toggle forms
-    document.getElementById('show-recovery').addEventListener('click', function (e) {
+    document.getElementById('show-recovery').addEventListener('click', (e) => {
       e.preventDefault();
       hideAllForms();
       recoveryForm.hidden = false;
-      msg.hidden = true;
     });
 
-    document.getElementById('show-login').addEventListener('click', function (e) {
+    document.getElementById('show-login').addEventListener('click', (e) => {
       e.preventDefault();
       hideAllForms();
       loginForm.hidden = false;
-      msg.hidden = true;
     });
 
-    // Show password reset form on recovery callback
-    window.addEventListener('gfii:recovery', function () {
-      hideAllForms();
-      resetForm.hidden = false;
-      showMessage('Set a new password below.', 'success');
-    });
-
-    // If already logged in, redirect to portal
-    window.addEventListener('gfii:ready', function (e) {
-      if (e.detail.user) {
-        window.location.href = '/portal.html';
-      }
+    // Auto-detect if user is already logged in
+    const session = supabase.auth.getSession().then(({ data }) => {
+      if (data.session) window.location.href = '/portal.html';
     });
   </script>
 
