@@ -51,6 +51,9 @@
       </div>
 
       <div class="apply-form-wrapper">
+        <!-- Message div will show submission status -->
+        <div id="apply-msg" class="message" hidden></div>
+
         <form class='apply-form' method='POST' name='gfii-application'>
           <input type="hidden" name="form-name" value="gfii-application">
 
@@ -78,6 +81,56 @@
   <footer class="apply-footer">
     <p>&copy; GFII — Private Society</p>
   </footer>
+
+  <!-- Supabase JS for form submission -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    // Replace with your Supabase project info
+    const supabaseUrl = 'https://adkljqadhghboezfazxz.supabase.co';
+    const supabaseKey = 'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const applyForm = document.querySelector('.apply-form');
+    const msgDiv = document.getElementById('apply-msg');
+
+    function showMessage(text, type='info') {
+      msgDiv.textContent = text;
+      msgDiv.className = 'message ' + type;
+      msgDiv.hidden = false;
+    }
+
+    applyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = applyForm.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Submitting…';
+      msgDiv.hidden = true;
+
+      const formData = new FormData(applyForm);
+      const data = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        working_on: formData.get('intent'),
+        why_join: formData.get('intent'),
+        who_they_want: '', // optional field
+        status: 'pending'
+      };
+
+      try {
+        const { error } = await supabase.from('applications').insert([data]);
+        if (error) throw error;
+
+        showMessage('Application submitted! You will be notified when approved.', 'success');
+        applyForm.reset();
+      } catch (err) {
+        showMessage(err.message || 'Failed to submit application.', 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Submit Application';
+    });
+  </script>
 
 </body>
 </html>
