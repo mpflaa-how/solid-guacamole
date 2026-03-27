@@ -5,18 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GFII — Private Society</title>
   <link rel="stylesheet" href="styles.css">
+
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    .hero {
+      max-width: 700px;
+      padding: 40px 20px;
+    }
+
+    .hero h1 {
+      font-size: 2.8rem;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: #aaa;
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: #c9a96e;
+      color: #0e0e10;
+      padding: 14px 22px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-secondary {
+      border: 1px solid rgba(201,169,110,0.3);
+      color: #c9a96e;
+      padding: 14px 22px;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .divider {
+      width: 60px;
+      height: 1px;
+      background: rgba(201,169,110,0.4);
+      margin: 24px auto;
+    }
+  </style>
 </head>
 
 <body>
 
-  <main>
-    <h1>GFII — Private Society</h1>
-    <p>A private community for growth-driven individuals.</p>
+  <main class="hero">
 
-    <nav>
-      <a href="/apply.html">Apply</a>
-      <a href="/login.html">Member Login</a>
-    </nav>
+    <h1>GFII</h1>
+
+    <div class="divider"></div>
+
+    <p>
+      A private society of individuals committed to building, evolving,
+      and operating at a higher level.
+    </p>
+
+    <div class="cta-group">
+      <a href="/apply.html" class="btn-primary">Request Access</a>
+      <a href="/login.html" class="btn-secondary">Member Login</a>
+    </div>
+
+    <p class="footer-note">
+      Admission is selective. Not everyone is accepted.
+    </p>
+
   </main>
 
 </body>
