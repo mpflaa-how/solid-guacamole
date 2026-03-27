@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.https://adkljqadhghboezfazxz.supabase.co;
-const supabaseServiceRoleKey = process.env.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFka2xqcWFkaGdoYm9lemZhenh6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDQwNjQ1OSwiZXhwIjoyMDg5OTgyNDU5fQ.1N-mUaYN2R7eJCp2yTgLow1rIP7_JhdVNlLpg24R5no;
+const supabaseServiceRoleKey = process.env.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFka2xqcWFkaGdoYm9lemZhenh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MDY0NTksImV4cCI6MjA4OTk4MjQ1OX0.tpZ1yo58-46mtD88ZC2pdD5_uZIjL-fjXPU1fSsqnOA
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 export async function handler(event) {
