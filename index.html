@@ -8,30 +8,61 @@
 
   <style>
     body {
+      margin: 0;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       text-align: center;
+      overflow-x: hidden;
     }
 
-    .hero {
-      max-width: 700px;
-      padding: 40px 20px;
+    /* Subtle animated background */
+    .bg {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(201,169,110,0.08), transparent 40%),
+                  radial-gradient(circle at 80% 60%, rgba(201,169,110,0.05), transparent 50%);
+      animation: drift 12s ease-in-out infinite alternate;
+      z-index: -1;
     }
 
-    .hero h1 {
-      font-size: 2.8rem;
+    @keyframes drift {
+      from { transform: translateY(-10px); }
+      to { transform: translateY(10px); }
+    }
+
+    .container {
+      max-width: 760px;
+      padding: 60px 24px;
+    }
+
+    h1 {
+      font-size: 3rem;
       letter-spacing: -1px;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
 
-    .hero p {
-      font-size: 1.1rem;
+    .divider {
+      width: 80px;
+      height: 1px;
+      margin: 20px auto;
+      background: linear-gradient(90deg, transparent, #c9a96e, transparent);
+    }
+
+    .tagline {
+      font-size: 1.15rem;
       color: #aaa;
-      line-height: 1.6;
+      line-height: 1.7;
       margin-bottom: 40px;
+    }
+
+    /* Manifesto line */
+    .manifesto {
+      font-size: 0.95rem;
+      color: #777;
+      margin-bottom: 40px;
+      line-height: 1.6;
     }
 
     .cta-group {
@@ -41,62 +72,127 @@
       flex-wrap: wrap;
     }
 
+    .btn {
+      padding: 14px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+
     .btn-primary {
       background: #c9a96e;
       color: #0e0e10;
-      padding: 14px 22px;
-      border-radius: 8px;
-      text-decoration: none;
       font-weight: bold;
-      letter-spacing: 0.5px;
     }
 
     .btn-secondary {
       border: 1px solid rgba(201,169,110,0.3);
       color: #c9a96e;
-      padding: 14px 22px;
-      border-radius: 8px;
-      text-decoration: none;
     }
 
-    .footer-note {
+    /* subtle shimmer */
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: 0.5s;
+    }
+
+    .btn:hover::after {
+      left: 100%;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 12px rgba(201,169,110,0.25);
+    }
+
+    .footer {
       margin-top: 60px;
-      font-size: 0.85rem;
-      color: #666;
+      font-size: 0.8rem;
+      color: #555;
+      letter-spacing: 1px;
     }
 
-    .divider {
-      width: 60px;
-      height: 1px;
-      background: rgba(201,169,110,0.4);
-      margin: 24px auto;
+    /* hidden reveal section */
+    .reveal {
+      margin-top: 80px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: 0.6s ease;
     }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal p {
+      color: #888;
+      font-size: 0.95rem;
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
   </style>
 </head>
 
 <body>
 
-  <main class="hero">
+<div class="bg"></div>
 
-    <h1>GFII</h1>
+<main class="container">
 
-    <div class="divider"></div>
+  <h1>GFII</h1>
 
+  <div class="divider"></div>
+
+  <p class="tagline">
+    A private society of individuals committed to building,
+    evolving, and operating at a higher level.
+  </p>
+
+  <p class="manifesto">
+    Not a social network. Not a forum.  
+    A signal layer for people who take themselves seriously.
+  </p>
+
+  <div class="cta-group">
+    <a href="/apply.html" class="btn btn-primary">Request Access</a>
+    <a href="/login.html" class="btn btn-secondary">Member Login</a>
+  </div>
+
+  <div class="footer">
+    Admission is selective
+  </div>
+
+  <!-- Hidden depth -->
+  <div class="reveal" id="reveal">
     <p>
-      A private society of individuals committed to building, evolving,
-      and operating at a higher level.
+      GFII is built for those who are actively shaping their trajectory —
+      not observing others. Entry is reviewed. Presence is intentional.
     </p>
+  </div>
 
-    <div class="cta-group">
-      <a href="/apply.html" class="btn-primary">Request Access</a>
-      <a href="/login.html" class="btn-secondary">Member Login</a>
-    </div>
+</main>
 
-    <p class="footer-note">
-      Admission is selective. Not everyone is accepted.
-    </p>
-
-  </main>
+<script>
+  // subtle scroll reveal
+  window.addEventListener('scroll', () => {
+    const el = document.getElementById('reveal');
+    if (window.scrollY > 40) {
+      el.classList.add('visible');
+    }
+  });
+</script>
 
 </body>
 </html>
