@@ -144,150 +144,45 @@ function redirect(path) {
 /* =============================
    INIT
 ============================= */
-async function init() {
-  try {
-    const { data: { session }, error } =
-      await supabase.auth.getSession();
+async function initPortal() {
+  const { data: { session } } = await supabase.auth.getSession();
 
-    if (error || !session) {
-      redirect('/login.html');
-      return;
-    }
-
-    currentUser = session.user;
-
-    await verifyApproval();
-    const profile = await loadProfile();
-
-    renderProfile(profile);
-    renderStatus(profile);
-    await loadMembers();
-
-    logoutBtn.hidden = false;
-
-  } catch (err) {
-    console.error('Init error:', err);
-    redirect('/login.html');
-  }
-}
-
-/* =============================
-   APPROVAL CHECK
-   (SECURE — uses UID)
-============================= */
-async function verifyApproval() {
-
-  const { data, error } = await supabase
-    .from('approved_users')
-    .select('user_id')
-    .eq('user_id', currentUser.id)
-    .maybeSingle();
-
-  if (error || !data) {
-    redirect('/not-approved.html');
-    throw new Error('User not approved');
-  }
-}
-
-/* =============================
-   PROFILE LOAD
-============================= */
-async function loadProfile() {
-
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', currentUser.id)
-    .maybeSingle();
-
-  if (error || !profile) {
-    redirect('/onboarding.html');
-    throw new Error('Profile missing');
-  }
-
-  if (!profile.onboarding_complete) {
-    redirect('/onboarding.html');
-    throw new Error('Onboarding incomplete');
-  }
-
-  return profile;
-}
-
-/* =============================
-   RENDER PROFILE
-============================= */
-function renderProfile(profile) {
-  profileEl.innerHTML = `
-    <div class="profile-name">${profile.name}</div>
-    <div class="profile-statement">${profile.statement || ''}</div>
-    <div class="badge">${profile.focus || 'Member'}</div>
-  `;
-}
-
-/* =============================
-   RENDER STATUS
-============================= */
-function renderStatus(profile) {
-  statusEl.innerHTML = `
-    <div class="status-box">
-      <p><strong>Alias:</strong> ${profile.alias || 'Not set'}</p>
-      <p><strong>Focus:</strong> ${profile.focus || '—'}</p>
-      <p><strong>Member Since:</strong>
-        ${new Date(profile.created_at).toLocaleDateString()}
-      </p>
-    </div>
-  `;
-}
-
-/* =============================
-   LOAD MEMBERS
-============================= */
-async function loadMembers() {
-
-  const { data: members, error } = await supabase
-    .from('profiles')
-    .select('id,name,focus')
-    .neq('id', currentUser.id)
-    .limit(5);
-
-  if (error || !members?.length) {
-    membersEl.innerHTML = '<p>No members yet.</p>';
+  if (!session) {
+    location.replace('/login.html');
     return;
   }
 
-  membersEl.innerHTML = members.map(member => `
-    <div class="member">
-      <strong>${member.name}</strong>
-      <p>${member.focus || ''}</p>
-      <a href="/profile.html?id=${member.id}">
-        View
-      </a>
-    </div>
-  `).join('');
+  const user = session.user;
+
+  // ✅ approval
+  const { data: approved } = await supabase
+    .from('approved_users')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (!approved) {
+    location.replace('/not-approved.html');
+    return;
+  }
+
+  // ✅ profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('onboarding_complete')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (!profile || !profile.onboarding_complete) {
+    location.replace('/onboarding.html');
+    return;
+  }
+
+  // ✅ SUCCESS → go to dashboard ONLY
+  location.replace('/dashboard.html');
 }
 
-/* =============================
-   LOGOUT
-============================= */
-logoutBtn.addEventListener('click', async () => {
-  await supabase.auth.signOut();
-  redirect('/login.html');
-});
-
-/* =============================
-   AUTH LISTENER
-   (auto logout if session dies)
-============================= */
-supabase.auth.onAuthStateChange((event) => {
-  if (event === 'SIGNED_OUT') {
-    redirect('/login.html');
-  }
-});
-
-/* =============================
-   START
-============================= */
-init();
+initPortal();
 </script>
 
 </body>
