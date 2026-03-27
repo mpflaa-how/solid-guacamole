@@ -116,115 +116,177 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+/* =============================
+   SUPABASE
+============================= */
 const supabase = createClient(
   'https://adkljqadhghboezfazxz.supabase.co',
   'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6'
 );
 
+/* =============================
+   DOM
+============================= */
 const logoutBtn = document.getElementById('logout-btn');
 const profileEl = document.getElementById('profile');
 const statusEl = document.getElementById('status');
 const membersEl = document.getElementById('members');
 
-let currentUser;
+let currentUser = null;
 
-// ---------------- AUTH + GATING ----------------
+/* =============================
+   SAFE REDIRECT
+============================= */
+function redirect(path) {
+  window.location.replace(path);
+}
+
+/* =============================
+   INIT
+============================= */
 async function init() {
-  const { data: { session } } = await supabase.auth.getSession();
+  try {
+    const { data: { session }, error } =
+      await supabase.auth.getSession();
 
-  if (!session) {
-    location.href = '/login.html';
-    return;
+    if (error || !session) {
+      redirect('/login.html');
+      return;
+    }
+
+    currentUser = session.user;
+
+    await verifyApproval();
+    const profile = await loadProfile();
+
+    renderProfile(profile);
+    renderStatus(profile);
+    await loadMembers();
+
+    logoutBtn.hidden = false;
+
+  } catch (err) {
+    console.error('Init error:', err);
+    redirect('/login.html');
   }
+}
 
-  currentUser = session.user;
-  const email = currentUser.email.toLowerCase().trim();
+/* =============================
+   APPROVAL CHECK
+   (SECURE — uses UID)
+============================= */
+async function verifyApproval() {
 
-  // ✅ APPROVAL CHECK
-  const { data: approved } = await supabase
+  const { data, error } = await supabase
     .from('approved_users')
-    .select('*')
-    .ilike('email', email)
+    .select('user_id')
+    .eq('user_id', currentUser.id)
     .maybeSingle();
 
-  if (!approved) {
-    location.href = '/not-approved.html';
-    return;
+  if (error || !data) {
+    redirect('/not-approved.html');
+    throw new Error('User not approved');
   }
+}
 
-  // ✅ PROFILE CHECK
-  const { data: profile } = await supabase
+/* =============================
+   PROFILE LOAD
+============================= */
+async function loadProfile() {
+
+  const { data: profile, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', currentUser.id)
     .maybeSingle();
 
-  if (!profile || !profile.onboarding_complete) {
-    location.href = '/onboarding.html';
-    return;
+  if (error || !profile) {
+    redirect('/onboarding.html');
+    throw new Error('Profile missing');
   }
 
-  logoutBtn.hidden = false;
+  if (!profile.onboarding_complete) {
+    redirect('/onboarding.html');
+    throw new Error('Onboarding incomplete');
+  }
 
-  renderProfile(profile);
-  renderStatus(profile);
-  loadMembers();
+  return profile;
 }
 
-// ---------------- PROFILE ----------------
+/* =============================
+   RENDER PROFILE
+============================= */
 function renderProfile(profile) {
   profileEl.innerHTML = `
     <div class="profile-name">${profile.name}</div>
     <div class="profile-statement">${profile.statement || ''}</div>
-    <div class="badge">${profile.focus}</div>
+    <div class="badge">${profile.focus || 'Member'}</div>
   `;
 }
 
-// ---------------- STATUS ----------------
+/* =============================
+   RENDER STATUS
+============================= */
 function renderStatus(profile) {
   statusEl.innerHTML = `
     <div class="status-box">
       <p><strong>Alias:</strong> ${profile.alias || 'Not set'}</p>
-      <p><strong>Focus:</strong> ${profile.focus}</p>
-      <p><strong>Member Since:</strong> ${new Date(profile.created_at).toLocaleDateString()}</p>
+      <p><strong>Focus:</strong> ${profile.focus || '—'}</p>
+      <p><strong>Member Since:</strong>
+        ${new Date(profile.created_at).toLocaleDateString()}
+      </p>
     </div>
   `;
 }
 
-// ---------------- MEMBERS ----------------
+/* =============================
+   LOAD MEMBERS
+============================= */
 async function loadMembers() {
-  const { data: members } = await supabase
+
+  const { data: members, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id,name,focus')
     .neq('id', currentUser.id)
     .limit(5);
 
-  if (!members || !members.length) {
+  if (error || !members?.length) {
     membersEl.innerHTML = '<p>No members yet.</p>';
     return;
   }
 
-  membersEl.innerHTML = '';
-
-  members.forEach(member => {
-    const div = document.createElement('div');
-    div.className = 'member';
-    div.innerHTML = `
+  membersEl.innerHTML = members.map(member => `
+    <div class="member">
       <strong>${member.name}</strong>
       <p>${member.focus || ''}</p>
-      <a href="/profile.html?id=${member.id}">View</a>
-    `;
-    membersEl.appendChild(div);
-  });
+      <a href="/profile.html?id=${member.id}">
+        View
+      </a>
+    </div>
+  `).join('');
 }
 
-// ---------------- LOGOUT ----------------
+/* =============================
+   LOGOUT
+============================= */
 logoutBtn.addEventListener('click', async () => {
   await supabase.auth.signOut();
-  location.href = '/login.html';
+  redirect('/login.html');
 });
 
-// INIT
+/* =============================
+   AUTH LISTENER
+   (auto logout if session dies)
+============================= */
+supabase.auth.onAuthStateChange((event) => {
+  if (event === 'SIGNED_OUT') {
+    redirect('/login.html');
+  }
+});
+
+/* =============================
+   START
+============================= */
 init();
 </script>
 
