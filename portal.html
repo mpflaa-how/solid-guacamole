@@ -65,11 +65,18 @@ async function initPortal() {
   const email = currentUser.email;
 
   // ✅ Check approval
-  const { data: approved } = await supabase
-    .from('approved_users')
-    .select('email')
-    .eq('email', email)
-    .single();
+  const { data: approved, error: approvalError } = await supabase
+  .from('approved_users')
+  .select('email')
+  .eq('email', email.toLowerCase().trim())
+  .maybeSingle();
+
+console.log("APPROVAL CHECK:", approved, approvalError);
+
+if (!approved) {
+  location.href = '/not-approved.html';
+  return;
+}
 
   if (!approved) {
     location.href = '/not-approved.html';
@@ -77,11 +84,18 @@ async function initPortal() {
   }
 
   // ✅ Check onboarding
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', currentUser.id)
-    .single();
+  const { data: profile, error: profileError } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('id', currentUser.id)
+  .maybeSingle();
+
+console.log("PROFILE:", profile, profileError);
+
+if (!profile || !profile.onboarding_complete) {
+  location.href = '/onboarding.html';
+  return;
+}
 
   if (!profile || !profile.onboarding_complete) {
     location.href = '/onboarding.html';
