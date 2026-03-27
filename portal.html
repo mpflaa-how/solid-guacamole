@@ -1,12 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GFII Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<nav class="nav">
+  <h1>GFII</h1>
+  <button id="logout-btn" class="btn-logout" hidden>Log Out</button>
+</nav>
+
+<main class="portal-grid">
+
+  <!-- LEFT: Profile -->
+  <section class="card">
+    <h3>Your Profile</h3>
+    <div id="profile"></div>
+  </section>
+
+  <!-- CENTER: Feed -->
+  <section class="card">
+    <h3>Feed</h3>
+
+    <!-- Post Composer -->
+    <form id="post-form">
+      <textarea id="post-content" placeholder="Share something..." required></textarea>
+      <button type="submit">Post</button>
+    </form>
+
+    <div id="feed"></div>
+  </section>
+
+</main>
+
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabaseUrl = 'https://adkljqadhghboezfazxz.supabase.co';
-const supabaseKey = 'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(
+  'https://adkljqadhghboezfazxz.supabase.co',
+  'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6'
+);
 
 const logoutBtn = document.getElementById('logout-btn');
+const feedEl = document.getElementById('feed');
+const profileEl = document.getElementById('profile');
+const postForm = document.getElementById('post-form');
 
+let currentUser;
+
+// ---------------- AUTH + GATING ----------------
 async function initPortal() {
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -15,40 +61,108 @@ async function initPortal() {
     return;
   }
 
-  const email = session.user.email;
+  currentUser = session.user;
+  const email = currentUser.email;
 
-  // Check if user is approved
-  const { data: approved, error } = await supabase
+  // ✅ Check approval
+  const { data: approved } = await supabase
     .from('approved_users')
-    .select('email, onboarding_complete')
+    .select('email')
     .eq('email', email)
     .single();
-
-  if (error) {
-    console.error(error);
-    location.href = '/login.html';
-    return;
-  }
 
   if (!approved) {
     location.href = '/not-approved.html';
     return;
   }
 
-  if (!approved.onboarding_complete) {
+  // ✅ Check onboarding
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (!profile || !profile.onboarding_complete) {
     location.href = '/onboarding.html';
     return;
   }
 
-  // ✅ SUCCESS: show logout button
   logoutBtn.hidden = false;
+
+  renderProfile(profile);
+  loadFeed();
 }
 
+// ---------------- PROFILE ----------------
+function renderProfile(profile) {
+  profileEl.innerHTML = `
+    <p><strong>${profile.name}</strong></p>
+    <p>${profile.statement || ''}</p>
+    <p><em>${profile.focus}</em></p>
+  `;
+}
+
+// ---------------- FEED ----------------
+async function loadFeed() {
+  const { data: posts, error } = await supabase
+    .from('posts')
+    .select('*, profiles(name)')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    feedEl.innerHTML = '<p>Error loading feed.</p>';
+    return;
+  }
+
+  if (!posts.length) {
+    feedEl.innerHTML = '<p>No posts yet.</p>';
+    return;
+  }
+
+  feedEl.innerHTML = '';
+
+  posts.forEach(post => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <p><strong>${post.profiles?.name || 'Unknown'}</strong></p>
+      <p>${post.content}</p>
+    `;
+    feedEl.appendChild(div);
+  });
+}
+
+// ---------------- POST CREATE ----------------
+postForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const content = document.getElementById('post-content').value.trim();
+  if (!content) return;
+
+  const { error } = await supabase.from('posts').insert([{
+    content,
+    user_id: currentUser.id
+  }]);
+
+  if (error) {
+    alert('Failed to post');
+    return;
+  }
+
+  postForm.reset();
+  loadFeed();
+});
+
+// ---------------- LOGOUT ----------------
 logoutBtn.addEventListener('click', async () => {
   await supabase.auth.signOut();
   location.href = '/login.html';
 });
 
-// Initialize
+// INIT
 initPortal();
 </script>
+
+</body>
+</html>
