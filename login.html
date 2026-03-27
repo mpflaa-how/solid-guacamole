@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GFII Login</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GFII Login</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -17,10 +17,10 @@
   </div>
 </nav>
 
-<main style="max-width: 420px; margin: 80px auto 0;">
+<main style="max-width:420px;margin:80px auto 0;">
 
   <h2 style="text-align:center;">Member Access</h2>
-  <p style="text-align:center; color:#888;">
+  <p style="text-align:center;color:#888;">
     Private entry for approved members only.
   </p>
 
@@ -48,12 +48,6 @@
     </p>
   </form>
 
-  <!-- RESET -->
-  <form id="reset-form" class="auth-form" hidden>
-    <input id="reset-password" type="password" placeholder="New Password" required minlength="6">
-    <button type="submit">Update Password</button>
-  </form>
-
 </main>
 
 <script type="module">
@@ -66,7 +60,6 @@ const supabase = createClient(
 
 const loginForm = document.getElementById('login-form');
 const recoveryForm = document.getElementById('recovery-form');
-const resetForm = document.getElementById('reset-form');
 const msg = document.getElementById('auth-message');
 
 function showMessage(text, type='info') {
@@ -78,7 +71,6 @@ function showMessage(text, type='info') {
 function hideAllForms() {
   loginForm.hidden = true;
   recoveryForm.hidden = true;
-  resetForm.hidden = true;
   msg.hidden = true;
 }
 
@@ -95,31 +87,15 @@ loginForm.addEventListener('submit', async (e) => {
   msg.hidden = true;
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
     if (error) throw error;
 
-    if (!data.user.email_confirmed_at) {
-      showMessage('Please confirm your email first.', 'error');
-      btn.disabled = false;
-      btn.textContent = 'Enter';
-      return;
-    }
-
-    const { data: approved } = await supabase
-      .from('approved_users')
-      .select('email')
-      .ilike('email', email)
-      .maybeSingle();
-
-    if (!approved) {
-      await supabase.auth.signOut();
-      showMessage('You are not approved yet.', 'error');
-      btn.disabled = false;
-      btn.textContent = 'Enter';
-      return;
-    }
-
-    location.href = '/portal.html';
+    // DB policies decide approval now
+    window.location.href = '/portal.html';
 
   } catch (err) {
     showMessage(err.message || 'Login failed.', 'error');
@@ -128,7 +104,7 @@ loginForm.addEventListener('submit', async (e) => {
   }
 });
 
-/* ---------------- RECOVERY ---------------- */
+/* ---------------- PASSWORD RECOVERY ---------------- */
 recoveryForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -153,31 +129,7 @@ recoveryForm.addEventListener('submit', async (e) => {
   btn.disabled = false;
 });
 
-/* ---------------- RESET PASSWORD ---------------- */
-resetForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const password = document.getElementById('reset-password').value;
-  const btn = resetForm.querySelector('button');
-
-  btn.disabled = true;
-  btn.textContent = 'Updating…';
-
-  try {
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) throw error;
-
-    showMessage('Password updated. Redirecting…', 'success');
-    setTimeout(() => location.href = '/login.html', 1500);
-
-  } catch (err) {
-    showMessage(err.message || 'Update failed.', 'error');
-    btn.disabled = false;
-    btn.textContent = 'Update Password';
-  }
-});
-
-/* ---------------- FORM TOGGLES ---------------- */
+/* ---------------- TOGGLES ---------------- */
 document.getElementById('show-recovery').onclick = (e) => {
   e.preventDefault();
   hideAllForms();
@@ -190,29 +142,11 @@ document.getElementById('show-login').onclick = (e) => {
   loginForm.hidden = false;
 };
 
-/* ---------------- RESET MODE DETECTION ---------------- */
-/* ONLY show reset form if arriving from email link */
-const hashParams = new URLSearchParams(window.location.hash.substring(1));
-const type = hashParams.get('type');
-
-if (type === 'recovery') {
-  hideAllForms();
-  resetForm.hidden = false;
-}
-
 /* ---------------- AUTO SESSION ---------------- */
-supabase.auth.getSession().then(async ({ data }) => {
-  if (!data.session || type === 'recovery') return;
-
-  const email = data.session.user.email.toLowerCase().trim();
-
-  const { data: approved } = await supabase
-    .from('approved_users')
-    .select('email')
-    .ilike('email', email)
-    .maybeSingle();
-
-  if (approved) location.href = '/portal.html';
+supabase.auth.getSession().then(({ data }) => {
+  if (data.session) {
+    location.href = '/portal.html';
+  }
 });
 </script>
 
