@@ -17,13 +17,13 @@
 <main class="portal-grid">
 
   <!-- LEFT: Profile -->
-  <section class="card">
+  <section class="card" id="profile-section">
     <h3>Your Profile</h3>
     <div id="profile"></div>
   </section>
 
   <!-- CENTER: Feed -->
-  <section class="card">
+  <section class="card" id="feed-section">
     <h3>Feed</h3>
 
     <!-- Post Composer -->
@@ -33,6 +33,12 @@
     </form>
 
     <div id="feed"></div>
+  </section>
+
+  <!-- RIGHT: Member Discovery -->
+  <section class="card" id="discovery-section">
+    <h3>Member Discovery</h3>
+    <div id="members"></div>
   </section>
 
 </main>
@@ -49,6 +55,7 @@ const logoutBtn = document.getElementById('logout-btn');
 const feedEl = document.getElementById('feed');
 const profileEl = document.getElementById('profile');
 const postForm = document.getElementById('post-form');
+const membersEl = document.getElementById('members');
 
 let currentUser;
 
@@ -63,7 +70,6 @@ async function initPortal() {
 
   currentUser = session.user;
   const email = currentUser.email.toLowerCase().trim();
-  console.log("Current user email:", email);
 
   // ✅ Check approval
   const { data: approved, error: approvalError } = await supabase
@@ -72,31 +78,34 @@ async function initPortal() {
     .eq('email', email)
     .maybeSingle();
 
-  console.log("Approved record:", approved, "Approval error:", approvalError);
+  if (approvalError) {
+    console.error("Approval check error:", approvalError);
+    location.href = '/login.html';
+    return;
+  }
 
   if (!approved) {
     location.href = '/not-approved.html';
     return;
   }
 
-  // ✅ Check onboarding/profile
+  // ✅ Check onboarding
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', currentUser.id)
     .maybeSingle();
 
-  console.log("Profile record:", profile, "Profile error:", profileError);
-
   if (!profile || !profile.onboarding_complete) {
     location.href = '/onboarding.html';
     return;
   }
 
-  // ✅ Success: show logout and render UI
   logoutBtn.hidden = false;
+
   renderProfile(profile);
   loadFeed();
+  loadMembers();
 }
 
 // ---------------- PROFILE ----------------
@@ -104,7 +113,8 @@ function renderProfile(profile) {
   profileEl.innerHTML = `
     <p><strong>${profile.name}</strong></p>
     <p>${profile.statement || ''}</p>
-    <p><em>${profile.focus || ''}</em></p>
+    <p><em>${profile.focus}</em></p>
+    <p>Reputation: ${profile.reputation || 0}</p>
   `;
 }
 
@@ -112,7 +122,7 @@ function renderProfile(profile) {
 async function loadFeed() {
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('*, profiles(name)')
+    .select('*, profiles(name, reputation), reactions(*)')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -120,20 +130,33 @@ async function loadFeed() {
     return;
   }
 
-  if (!posts || !posts.length) {
+  if (!posts.length) {
     feedEl.innerHTML = '<p>No posts yet.</p>';
     return;
   }
 
   feedEl.innerHTML = '';
+
   posts.forEach(post => {
     const div = document.createElement('div');
-    div.className = 'card';
+    div.className = 'card post-card';
     div.innerHTML = `
-      <p><strong>${post.profiles?.name || 'Unknown'}</strong></p>
+      <p><strong>${post.profiles?.name || 'Unknown'}</strong> (${post.profiles?.reputation || 0} rep)</p>
       <p>${post.content}</p>
+      <div class="reaction-bar">
+        <button class="like-btn" data-post="${post.id}">👍 ${post.reactions?.length || 0}</button>
+      </div>
     `;
     feedEl.appendChild(div);
+  });
+
+  // Attach reaction listeners
+  document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const postId = btn.dataset.post;
+      const { error } = await supabase.from('reactions').insert([{ post_id: postId, user_id: currentUser.id }]);
+      if (!error) loadFeed();
+    });
   });
 }
 
@@ -156,6 +179,34 @@ postForm.addEventListener('submit', async (e) => {
   postForm.reset();
   loadFeed();
 });
+
+// ---------------- MEMBER DISCOVERY ----------------
+async function loadMembers() {
+  const { data: members, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .neq('id', currentUser.id)
+    .order('reputation', { ascending: false })
+    .limit(5);
+
+  if (error) {
+    membersEl.innerHTML = '<p>Error loading members.</p>';
+    return;
+  }
+
+  membersEl.innerHTML = '';
+
+  members.forEach(member => {
+    const div = document.createElement('div');
+    div.className = 'member-card';
+    div.innerHTML = `
+      <p><strong>${member.name}</strong> (${member.reputation || 0} rep)</p>
+      <p>${member.focus || ''}</p>
+      <a href="/profile.html?id=${member.id}">View Profile</a>
+    `;
+    membersEl.appendChild(div);
+  });
+}
 
 // ---------------- LOGOUT ----------------
 logoutBtn.addEventListener('click', async () => {
