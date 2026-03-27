@@ -31,13 +31,19 @@
   const logoutBtn = document.getElementById('logout-btn');
   const container = document.getElementById('applications-container');
 
+  // ✅ Only these emails can access the admin panel
+  const ADMIN_EMAILS = ['Mpflaa@gmail.com', 'airdogar@gmail.com'];
+
   async function checkAdmin() {
     const { data: sessionData } = await supabase.auth.getSession();
     const user = sessionData?.session?.user;
-    if (!user) {
+
+    if (!user || !ADMIN_EMAILS.includes(user.email)) {
+      alert('Access denied. You are not an admin.');
       window.location.href = '/login.html';
       return null;
     }
+
     logoutBtn.hidden = false;
     return user;
   }
@@ -79,30 +85,14 @@
         <button class="reject-btn">Reject</button>
       `;
 
-      const approveBtn = card.querySelector('.approve-btn');
-      const rejectBtn = card.querySelector('.reject-btn');
-
-      approveBtn.addEventListener('click', async () => {
-        // 1️⃣ Update application status
-        await supabase
-          .from('applications')
-          .update({ status: 'approved' })
-          .eq('id', app.id);
-
-        // 2️⃣ Add to approved_users table
-        await supabase
-          .from('approved_users')
-          .insert([{ email: app.email }])
-          .select();
-
+      card.querySelector('.approve-btn').addEventListener('click', async () => {
+        await supabase.from('applications').update({ status: 'approved' }).eq('id', app.id);
+        await supabase.from('approved_users').insert([{ email: app.email }]).select();
         card.remove();
       });
 
-      rejectBtn.addEventListener('click', async () => {
-        await supabase
-          .from('applications')
-          .update({ status: 'rejected' })
-          .eq('id', app.id);
+      card.querySelector('.reject-btn').addEventListener('click', async () => {
+        await supabase.from('applications').update({ status: 'rejected' }).eq('id', app.id);
         card.remove();
       });
 
@@ -110,12 +100,14 @@
     });
   }
 
-  // Initialize
   (async () => {
     const user = await checkAdmin();
     if (user) loadApplications();
   })();
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
