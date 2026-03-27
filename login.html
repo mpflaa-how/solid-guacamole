@@ -82,7 +82,7 @@ function hideAllForms() {
   msg.hidden = true;
 }
 
-// ---------------- LOGIN ----------------
+/* ---------------- LOGIN ---------------- */
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -105,7 +105,6 @@ loginForm.addEventListener('submit', async (e) => {
       return;
     }
 
-    // ✅ Approval check (case safe)
     const { data: approved } = await supabase
       .from('approved_users')
       .select('email')
@@ -120,7 +119,7 @@ loginForm.addEventListener('submit', async (e) => {
       return;
     }
 
-    window.location.href = '/portal.html';
+    location.href = '/portal.html';
 
   } catch (err) {
     showMessage(err.message || 'Login failed.', 'error');
@@ -129,7 +128,7 @@ loginForm.addEventListener('submit', async (e) => {
   }
 });
 
-// ---------------- RECOVERY ----------------
+/* ---------------- RECOVERY ---------------- */
 recoveryForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -154,7 +153,7 @@ recoveryForm.addEventListener('submit', async (e) => {
   btn.disabled = false;
 });
 
-// ---------------- RESET ----------------
+/* ---------------- RESET PASSWORD ---------------- */
 resetForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -178,7 +177,7 @@ resetForm.addEventListener('submit', async (e) => {
   }
 });
 
-// ---------------- TOGGLES ----------------
+/* ---------------- FORM TOGGLES ---------------- */
 document.getElementById('show-recovery').onclick = (e) => {
   e.preventDefault();
   hideAllForms();
@@ -191,9 +190,19 @@ document.getElementById('show-login').onclick = (e) => {
   loginForm.hidden = false;
 };
 
-// ---------------- AUTO SESSION ----------------
+/* ---------------- RESET MODE DETECTION ---------------- */
+/* ONLY show reset form if arriving from email link */
+const hashParams = new URLSearchParams(window.location.hash.substring(1));
+const type = hashParams.get('type');
+
+if (type === 'recovery') {
+  hideAllForms();
+  resetForm.hidden = false;
+}
+
+/* ---------------- AUTO SESSION ---------------- */
 supabase.auth.getSession().then(async ({ data }) => {
-  if (!data.session) return;
+  if (!data.session || type === 'recovery') return;
 
   const email = data.session.user.email.toLowerCase().trim();
 
