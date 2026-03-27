@@ -4,76 +4,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GFII Login</title>
-  <style>
-    /* Reset & base */
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-    body { background: #f2f5f7; color: #333; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    main { background: #fff; padding: 2.5rem; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-
-    h2 { margin-bottom: 0.5rem; color: #1a1a1a; text-align: center; }
-    p { margin-bottom: 1.5rem; text-align: center; color: #555; }
-
-    .auth-form { display: flex; flex-direction: column; gap: 1rem; }
-    input[type="email"], input[type="password"] { padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem; }
-    input[type="email"]:focus, input[type="password"]:focus { outline: none; border-color: #4a90e2; box-shadow: 0 0 0 2px rgba(74,144,226,0.2); }
-
-    button { padding: 0.75rem; border: none; border-radius: 6px; background: #4a90e2; color: #fff; font-size: 1rem; cursor: pointer; transition: 0.2s; }
-    button:hover { background: #357ABD; }
-
-    .auth-links { font-size: 0.9rem; text-align: center; margin-top: 0.5rem; }
-    .auth-links a { color: #4a90e2; text-decoration: none; margin: 0 0.25rem; }
-    .auth-links a:hover { text-decoration: underline; }
-
-    .message { padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; text-align: center; font-size: 0.95rem; }
-    .message.info { background: #e7f3ff; color: #3178c6; }
-    .message.success { background: #e6f4ea; color: #2d7a46; }
-    .message.error { background: #fdecea; color: #b22222; }
-
-    form[hidden] { display: none; }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
-<main>
-  <h2>GFII Member Login</h2>
-  <p>Access is available to approved members only.</p>
+<nav class="nav">
+  <h1 class="nav-brand">GFII</h1>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/apply.html">Apply</a>
+  </div>
+</nav>
+
+<main style="max-width: 420px; margin: 80px auto 0;">
+
+  <h2 style="text-align:center;">Member Access</h2>
+  <p style="text-align:center; color:#888;">
+    Private entry for approved members only.
+  </p>
 
   <div id="auth-message" class="message" hidden></div>
 
-  <!-- Login Form -->
+  <!-- LOGIN -->
   <form id="login-form" class="auth-form">
     <input id="login-email" type="email" placeholder="Email" required>
     <input id="login-password" type="password" placeholder="Password" required>
-    <button type="submit">Log In</button>
+
+    <button type="submit">Enter</button>
+
     <p class="auth-links">
-      <a href="#" id="show-recovery">Forgot password?</a> &middot;
-      <a href="/">Home</a>
+      <a href="#" id="show-recovery">Forgot password?</a>
     </p>
   </form>
 
-  <!-- Recovery Form -->
+  <!-- RECOVERY -->
   <form id="recovery-form" class="auth-form" hidden>
     <input id="recovery-email" type="email" placeholder="Email" required>
-    <button type="submit">Send Recovery Email</button>
+    <button type="submit">Send Reset Link</button>
+
     <p class="auth-links">
       <a href="#" id="show-login">Back to login</a>
     </p>
   </form>
 
-  <!-- Reset Form -->
+  <!-- RESET -->
   <form id="reset-form" class="auth-form" hidden>
-    <p style="text-align:center;">Set your new password:</p>
     <input id="reset-password" type="password" placeholder="New Password" required minlength="6">
     <button type="submit">Update Password</button>
   </form>
+
 </main>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabaseUrl = 'https://adkljqadhghboezfazxz.supabase.co';
-const supabaseKey = 'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(
+  'https://adkljqadhghboezfazxz.supabase.co',
+  'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6'
+);
 
 const loginForm = document.getElementById('login-form');
 const recoveryForm = document.getElementById('recovery-form');
@@ -93,14 +82,16 @@ function hideAllForms() {
   msg.hidden = true;
 }
 
-// ---------------- Login ----------------
+// ---------------- LOGIN ----------------
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('login-email').value;
+
+  const email = document.getElementById('login-email').value.toLowerCase().trim();
   const password = document.getElementById('login-password').value;
   const btn = loginForm.querySelector('button');
+
   btn.disabled = true;
-  btn.textContent = 'Logging in…';
+  btn.textContent = 'Entering…';
   msg.hidden = true;
 
   try {
@@ -108,56 +99,68 @@ loginForm.addEventListener('submit', async (e) => {
     if (error) throw error;
 
     if (!data.user.email_confirmed_at) {
-      showMessage('Please confirm your email before logging in.', 'error');
-      btn.disabled = false; btn.textContent = 'Log In';
+      showMessage('Please confirm your email first.', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Enter';
       return;
     }
 
-    const { data: approved, error: approvalError } = await supabase
+    // ✅ Approval check (case safe)
+    const { data: approved } = await supabase
       .from('approved_users')
       .select('email')
-      .eq('email', email)
-      .limit(1);
+      .ilike('email', email)
+      .maybeSingle();
 
-    if (approvalError) throw approvalError;
-    if (!approved.length) {
-      showMessage('You are not yet approved to access the portal.', 'error');
+    if (!approved) {
       await supabase.auth.signOut();
-      btn.disabled = false; btn.textContent = 'Log In';
+      showMessage('You are not approved yet.', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Enter';
       return;
     }
 
     window.location.href = '/portal.html';
+
   } catch (err) {
-    showMessage(err.message || 'Login failed. Check your credentials.', 'error');
+    showMessage(err.message || 'Login failed.', 'error');
     btn.disabled = false;
-    btn.textContent = 'Log In';
+    btn.textContent = 'Enter';
   }
 });
 
-// ---------------- Recovery ----------------
+// ---------------- RECOVERY ----------------
 recoveryForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+
   const email = document.getElementById('recovery-email').value;
   const btn = recoveryForm.querySelector('button');
+
   btn.disabled = true;
 
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/login.html' });
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/login.html'
+    });
+
     if (error) throw error;
-    showMessage('Check your email for a recovery link.', 'success');
+
+    showMessage('Recovery email sent.', 'success');
+
   } catch (err) {
-    showMessage(err.message || 'Could not send recovery email.', 'error');
+    showMessage(err.message || 'Failed to send email.', 'error');
   }
 
   btn.disabled = false;
 });
 
-// ---------------- Password reset ----------------
+// ---------------- RESET ----------------
 resetForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+
   const password = document.getElementById('reset-password').value;
   const btn = resetForm.querySelector('button');
+
   btn.disabled = true;
   btn.textContent = 'Updating…';
 
@@ -165,31 +168,42 @@ resetForm.addEventListener('submit', async (e) => {
     const { error } = await supabase.auth.updateUser({ password });
     if (error) throw error;
 
-    showMessage('Password updated! Redirecting…', 'success');
-    setTimeout(() => window.location.href = '/login.html', 1500);
+    showMessage('Password updated. Redirecting…', 'success');
+    setTimeout(() => location.href = '/login.html', 1500);
+
   } catch (err) {
-    showMessage(err.message || 'Could not update password.', 'error');
+    showMessage(err.message || 'Update failed.', 'error');
     btn.disabled = false;
     btn.textContent = 'Update Password';
   }
 });
 
-// ---------------- Form toggles ----------------
-document.getElementById('show-recovery').addEventListener('click', (e) => {
-  e.preventDefault(); hideAllForms(); recoveryForm.hidden = false;
-});
-document.getElementById('show-login').addEventListener('click', (e) => {
-  e.preventDefault(); hideAllForms(); loginForm.hidden = false;
-});
+// ---------------- TOGGLES ----------------
+document.getElementById('show-recovery').onclick = (e) => {
+  e.preventDefault();
+  hideAllForms();
+  recoveryForm.hidden = false;
+};
 
-// ---------------- Auto-redirect if already logged in ----------------
-supabase.auth.getSession().then(({ data }) => {
-  if (data.session) {
-    const email = data.session.user.email;
-    supabase.from('approved_users').select('email').eq('email', email).then(({ data: approved }) => {
-      if (approved.length) window.location.href = '/portal.html';
-    });
-  }
+document.getElementById('show-login').onclick = (e) => {
+  e.preventDefault();
+  hideAllForms();
+  loginForm.hidden = false;
+};
+
+// ---------------- AUTO SESSION ----------------
+supabase.auth.getSession().then(async ({ data }) => {
+  if (!data.session) return;
+
+  const email = data.session.user.email.toLowerCase().trim();
+
+  const { data: approved } = await supabase
+    .from('approved_users')
+    .select('email')
+    .ilike('email', email)
+    .maybeSingle();
+
+  if (approved) location.href = '/portal.html';
 });
 </script>
 
