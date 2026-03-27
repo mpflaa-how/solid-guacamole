@@ -1,52 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>GFII Onboarding</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GFII Onboarding</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+  <main>
     <h1>Welcome to GFII</h1>
-    <p>Complete your identity.</p>
+    <p>Complete your profile to access the portal.</p>
 
     <form id="onboarding-form">
-        <input id="name" placeholder="Full Name" required /><br><br>
+      <label for="name">Full Name *</label><br>
+      <input id="name" type="text" placeholder="Full Name" required /><br><br>
 
-        <input id="alias" placeholder="Alias (optional)" /><br><br>
+      <label for="alias">Alias (optional)</label><br>
+      <input id="alias" type="text" placeholder="Alias" /><br><br>
 
-        <textarea id="statement"
-                  placeholder="What are you becoming?"
-                  required></textarea><br><br>
+      <label for="statement">What are you becoming? *</label><br>
+      <textarea id="statement" placeholder="Your statement" required></textarea><br><br>
 
-        <select id="focus" required>
-            <option value="">Select Focus</option>
-            <option>Building</option>
-            <option>Learning</option>
-            <option>Networking</option>
-        </select><br><br>
+      <label for="focus">Focus *</label><br>
+      <select id="focus" required>
+        <option value="">Select Focus</option>
+        <option value="Building">Building</option>
+        <option value="Learning">Learning</option>
+        <option value="Networking">Networking</option>
+      </select><br><br>
 
-        <button type="submit">Enter GFII</button>
+      <button type="submit">Enter GFII</button>
+      <p id="form-message" class="message" hidden></p>
     </form>
+  </main>
 
-    <script src="/src/auth.js"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    <script>
-document.getElementById('onboarding-form')
-.addEventListener('submit', async (e) => {
+    const supabaseUrl = 'https://adkljqadhghboezfazxz.supabase.co';
+    const supabaseKey = 'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-  e.preventDefault();
+    const form = document.getElementById('onboarding-form');
+    const message = document.getElementById('form-message');
 
-  const body = {
-    name: name.value,
-    alias: alias.value,
-    statement: statement.value,
-    focus: focus.value
-  };
+    function showMessage(text, type='info') {
+      message.textContent = text;
+      message.className = 'message ' + type;
+      message.hidden = false;
+    }
 
-  await fetch('/.netlify/functions/completeOnboarding', {
-    method: 'POST',
-    body: JSON.stringify(body)
-  });
+    async function getSessionUser() {
+      const { data } = await supabase.auth.getSession();
+      return data.session?.user || null;
+    }
 
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      message.hidden = true;
+
+      const user = await getSessionUser();
+      if (!user) {
+        showMessage('You must be logged in to complete onboarding.', 'error');
+        return;
+      }
+
+      const body = {
+        name: form.name.value.trim(),
+        alias: form.alias.value.trim(),
+        statement: form.statement.value.trim(),
+        focus: form.focus.value
+      };
+
+      if (!body.name || !body.statement || !body.focus) {
+        showMessage('Please fill out all required fields.', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/.netlify/functions/completeOnboarding', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.access_token}`
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.message || 'Failed to complete onboarding.');
+        }
+
+        // ✅ Success
+        location.href = '/portal.html';
+
+      } catch (err) {
+        console.error(err);
+        showMessage(err.message, 'error');
+      }
+    });
+  </script>
+
+</body>
+</html>
   location.href = '/portal.html';
 });
     </script>
