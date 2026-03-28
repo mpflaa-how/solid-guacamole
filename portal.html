@@ -3,262 +3,210 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>GFII Portal</title>
 
 <link rel="stylesheet" href="styles.css">
-
-<style>
-
-/* ===== APP SHELL ===== */
-
-body{
-  margin:0;
-  font-family:Segoe UI, sans-serif;
-  background:#f4f6f8;
-}
-
-.app{
-  display:flex;
-  height:100vh;
-}
-
-/* ===== SIDEBAR ===== */
-
-.sidebar{
-  width:240px;
-  background:#0f172a;
-  color:white;
-  padding:22px;
-  display:flex;
-  flex-direction:column;
-}
-
-.logo{
-  font-size:20px;
-  font-weight:600;
-  margin-bottom:28px;
-}
-
-.nav button{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border:none;
-  background:none;
-  color:white;
-  text-align:left;
-  cursor:pointer;
-  border-radius:8px;
-  transition:.2s;
-}
-
-.nav button:hover{
-  background:#1e293b;
-}
-
-.logout{
-  margin-top:auto;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#1e293b;
-  color:white;
-  cursor:pointer;
-}
-
-/* ===== MAIN ===== */
-
-.main{
-  flex:1;
-  padding:32px;
-  overflow:auto;
-}
-
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:24px;
-}
-
-.view{
-  display:none;
-}
-
-.view.active{
-  display:block;
-}
-
-/* ===== CARDS ===== */
-
-.card{
-  background:white;
-  padding:22px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,.05);
-  margin-bottom:20px;
-}
-
-</style>
 </head>
 
 <body>
 
-<div class="app">
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">GFII</div>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <div class="nav-links">
+    <a href="#" onclick="showView('home')">Home</a>
+    <a href="#" onclick="showView('members')">Members</a>
+    <a href="#" onclick="showView('events')">Events</a>
+    <a href="#" onclick="showView('profile')">Profile</a>
+    <button class="btn-logout" id="logoutBtn">Logout</button>
+  </div>
+</nav>
 
-    <div class="logo">GFII</div>
+<main>
 
-    <div class="nav">
-      <button onclick="showView('home')">Home</button>
-      <button onclick="showView('members')">Members</button>
-      <button onclick="showView('events')">Events</button>
-      <button onclick="showView('profile')">Profile</button>
+<h2 id="viewTitle">Home</h2>
+
+<!-- HOME -->
+<section id="home" class="view">
+  <div class="portal-grid">
+
+    <div class="card">
+      <h3>Welcome</h3>
+      <p>Private member environment.</p>
     </div>
 
-    <button id="logoutBtn" class="logout">Logout</button>
-
-  </aside>
-
-
-  <!-- MAIN -->
-  <main class="main">
-
-    <div class="topbar">
-      <h2 id="viewTitle">Home</h2>
-      <div id="userDisplay">Loading...</div>
+    <div class="card">
+      <h3>Status</h3>
+      <p id="statusText">Loading...</p>
     </div>
 
+  </div>
+</section>
 
-    <!-- HOME -->
-    <section id="home" class="view active">
+<!-- MEMBERS -->
+<section id="members" class="view" hidden>
+  <div class="card">
+    <h3>Members</h3>
+    <div id="memberList">Loading members...</div>
+  </div>
+</section>
 
-      <div class="card">
-        <h3>Welcome to GFII</h3>
-        <p>Your private growth environment.</p>
-      </div>
+<!-- EVENTS -->
+<section id="events" class="view" hidden>
+  <div class="card">
+    <h3>Events</h3>
+    <ul>
+      <li>Weekly Growth Call</li>
+      <li>Founder Session</li>
+    </ul>
+  </div>
+</section>
 
-      <div class="card">
-        <h3>Status</h3>
-        <p>Secure member session active.</p>
-      </div>
+<!-- PROFILE -->
+<section id="profile" class="view" hidden>
+  <div class="card">
+    <h3>Your Profile</h3>
+    <p>Email: <span id="userEmail">—</span></p>
+    <p>Role: <span id="userRole">—</span></p>
+  </div>
+</section>
 
-    </section>
+</main>
 
+<script type="module">
 
-    <!-- MEMBERS -->
-    <section id="members" class="view">
-      <div class="card">
-        <h3>Member Directory</h3>
-        <p>Directory connection coming next.</p>
-      </div>
-    </section>
+import { createClient }
+from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-
-    <!-- EVENTS -->
-    <section id="events" class="view">
-      <div class="card">
-        <h3>Upcoming Events</h3>
-        <ul>
-          <li>Weekly Growth Call — Friday</li>
-          <li>Founder Session — March 30</li>
-        </ul>
-      </div>
-    </section>
-
-
-    <!-- PROFILE -->
-    <section id="profile" class="view">
-      <div class="card">
-        <h3>Your Profile</h3>
-        <p>Email: <span id="userEmail">—</span></p>
-      </div>
-    </section>
-
-  </main>
-
-</div>
-
-
-<!-- =========================
-     NETLIFY AUTH (CLEAN)
-========================= -->
-
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
-<script>
+const supabase = createClient(
+  "https://adkljqadhghboezfazxz.supabase.co",
+  "sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6"
+);
 
 /* ======================
-   VIEW NAVIGATION
+   VIEW NAV
 ====================== */
 
-function showView(id){
+window.showView = function(id){
 
   document.querySelectorAll(".view")
-    .forEach(v => v.classList.remove("active"));
+    .forEach(v => v.hidden = true);
 
-  document.getElementById(id).classList.add("active");
+  document.getElementById(id).hidden = false;
 
-  document.getElementById("viewTitle").textContent =
-    id.charAt(0).toUpperCase() + id.slice(1);
+  viewTitle.textContent =
+    id.charAt(0).toUpperCase()+id.slice(1);
 }
 
-
 /* ======================
-   AUTH GATE
+   INIT PORTAL
 ====================== */
 
-window.addEventListener("load", () => {
+async function init(){
 
-  netlifyIdentity.init();
+  const { data:{ session } }
+    = await supabase.auth.getSession();
 
-  netlifyIdentity.on("init", user => {
+  // Not logged in
+  if(!session){
+    location.href="/login.html";
+    return;
+  }
 
-    // BLOCK ACCESS IF NOT LOGGED IN
-    if(!user){
-      window.location.href="/login.html";
-      return;
-    }
+  const user = session.user;
+  userEmail.textContent = user.email;
 
-    setUser(user);
-  });
+  await ensureProfile(user);
 
-  netlifyIdentity.on("login", user => {
-    setUser(user);
-    netlifyIdentity.close();
-  });
+  const profile = await loadProfile(user.id);
 
-  netlifyIdentity.on("logout", () => {
-    window.location.href="/login.html";
-  });
+  // APPROVAL GATE
+  if(!profile.approved){
+    document.body.innerHTML = `
+      <main style="text-align:center;margin-top:80px">
+        <h2>Application Under Review</h2>
+        <p>Access unlocks after approval.</p>
+      </main>
+    `;
+    return;
+  }
 
-});
+  userRole.textContent = profile.role || "member";
+  statusText.textContent = "Access granted";
 
-
-/* ======================
-   USER DISPLAY
-====================== */
-
-function setUser(user){
-
-  document.getElementById("userDisplay").textContent =
-    user.user_metadata?.full_name || user.email;
-
-  document.getElementById("userEmail").textContent =
-    user.email;
+  loadMembers(user.id);
 }
 
+/* ======================
+   CREATE PROFILE
+====================== */
+
+async function ensureProfile(user){
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if(!data){
+    await supabase.from("profiles").insert({
+      id:user.id,
+      email:user.email
+    });
+  }
+}
+
+/* ======================
+   LOAD PROFILE
+====================== */
+
+async function loadProfile(id){
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  return data;
+}
+
+/* ======================
+   MEMBER DIRECTORY
+====================== */
+
+async function loadMembers(currentId){
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("name,focus")
+    .eq("approved", true)
+    .neq("id", currentId);
+
+  const list = document.getElementById("memberList");
+
+  list.innerHTML = "";
+
+  data?.forEach(m=>{
+    list.innerHTML += `
+      <p><strong>${m.name || "Member"}</strong>
+      — ${m.focus || ""}</p>
+    `;
+  });
+}
 
 /* ======================
    LOGOUT
 ====================== */
 
-document.getElementById("logoutBtn").onclick = () => {
-  netlifyIdentity.logout();
+logoutBtn.onclick = async ()=>{
+  await supabase.auth.signOut();
+  location.href="/login.html";
 };
+
+init();
 
 </script>
 
