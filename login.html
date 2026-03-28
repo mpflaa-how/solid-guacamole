@@ -19,135 +19,166 @@
 
 <main style="max-width:420px;margin:80px auto 0;">
 
-  <h2 style="text-align:center;">Member Access</h2>
-  <p style="text-align:center;color:#888;">
-    Private entry for approved members only.
-  </p>
+<h2 style="text-align:center;">Member Access</h2>
+<p style="text-align:center;color:#888;">
+Private entry for approved members only.
+</p>
 
-  <div id="auth-message" class="message" hidden></div>
+<div id="auth-message" class="message" hidden></div>
 
-  <!-- LOGIN -->
-  <form id="login-form" class="auth-form">
-    <input id="login-email" type="email" placeholder="Email" required>
-    <input id="login-password" type="password" placeholder="Password" required>
+<!-- LOGIN -->
+<form id="login-form" class="auth-form">
+<input id="login-email" type="email" placeholder="Email" required>
+<input id="login-password" type="password" placeholder="Password" required>
 
-    <button type="submit">Enter</button>
+<button type="submit">Enter</button>
 
-    <p class="auth-links">
-      <a href="#" id="show-recovery">Forgot password?</a>
-    </p>
-  </form>
+<p class="auth-links">
+<a href="#" id="show-recovery">Forgot password?</a>
+</p>
+</form>
 
-  <!-- RECOVERY -->
-  <form id="recovery-form" class="auth-form" hidden>
-    <input id="recovery-email" type="email" placeholder="Email" required>
-    <button type="submit">Send Reset Link</button>
+<!-- RECOVERY -->
+<form id="recovery-form" class="auth-form" hidden>
+<input id="recovery-email" type="email" placeholder="Email" required>
+<button type="submit">Send Reset Link</button>
 
-    <p class="auth-links">
-      <a href="#" id="show-login">Back to login</a>
-    </p>
-  </form>
+<p class="auth-links">
+<a href="#" id="show-login">Back to login</a>
+</p>
+</form>
 
 </main>
 
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from
+'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabase = createClient(
-  'https://adkljqadhghboezfazxz.supabase.co',
-  'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6'
+/* =============================
+   SUPABASE
+============================= */
+
+const supabase=createClient(
+'https://adkljqadhghboezfazxz.supabase.co',
+'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6'
 );
 
-const loginForm = document.getElementById('login-form');
-const recoveryForm = document.getElementById('recovery-form');
-const msg = document.getElementById('auth-message');
+/* DOM */
+const loginForm=document.getElementById('login-form');
+const recoveryForm=document.getElementById('recovery-form');
+const msg=document.getElementById('auth-message');
 
-function showMessage(text, type='info') {
-  msg.textContent = text;
-  msg.className = 'message ' + type;
-  msg.hidden = false;
+const go=(p)=>location.replace(p);
+
+/* MESSAGE */
+function showMessage(text,type='info'){
+msg.textContent=text;
+msg.className='message '+type;
+msg.hidden=false;
 }
 
-function hideAllForms() {
-  loginForm.hidden = true;
-  recoveryForm.hidden = true;
-  msg.hidden = true;
+function hideAllForms(){
+loginForm.hidden=true;
+recoveryForm.hidden=true;
+msg.hidden=true;
 }
 
-/* ---------------- LOGIN ---------------- */
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+/* =============================
+   LOGIN
+============================= */
 
-  const email = document.getElementById('login-email').value.toLowerCase().trim();
-  const password = document.getElementById('login-password').value;
-  const btn = loginForm.querySelector('button');
+loginForm.addEventListener('submit',async(e)=>{
+e.preventDefault();
 
-  btn.disabled = true;
-  btn.textContent = 'Entering…';
-  msg.hidden = true;
+const email=document.getElementById('login-email').value.toLowerCase().trim();
+const password=document.getElementById('login-password').value;
+const btn=loginForm.querySelector('button');
 
-  try {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+btn.disabled=true;
+btn.textContent='Entering…';
 
-    if (error) throw error;
+try{
 
-    // DB policies decide approval now
-    window.location.href = '/portal.html';
-
-  } catch (err) {
-    showMessage(err.message || 'Login failed.', 'error');
-    btn.disabled = false;
-    btn.textContent = 'Enter';
-  }
+const {error}=await supabase.auth.signInWithPassword({
+email,
+password
 });
 
-/* ---------------- PASSWORD RECOVERY ---------------- */
-recoveryForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
+if(error) throw error;
 
-  const email = document.getElementById('recovery-email').value;
-  const btn = recoveryForm.querySelector('button');
+go('/portal.html');
 
-  btn.disabled = true;
+}catch(err){
 
-  try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/login.html'
-    });
+showMessage(err.message || 'Login failed.','error');
+btn.disabled=false;
+btn.textContent='Enter';
 
-    if (error) throw error;
-
-    showMessage('Recovery email sent.', 'success');
-
-  } catch (err) {
-    showMessage(err.message || 'Failed to send email.', 'error');
-  }
-
-  btn.disabled = false;
+}
 });
 
-/* ---------------- TOGGLES ---------------- */
-document.getElementById('show-recovery').onclick = (e) => {
-  e.preventDefault();
-  hideAllForms();
-  recoveryForm.hidden = false;
+/* =============================
+   PASSWORD RECOVERY
+============================= */
+
+recoveryForm.addEventListener('submit',async(e)=>{
+e.preventDefault();
+
+const email=document.getElementById('recovery-email').value;
+const btn=recoveryForm.querySelector('button');
+
+btn.disabled=true;
+
+try{
+
+const {error}=await supabase.auth.resetPasswordForEmail(email,{
+redirectTo:window.location.origin+'/login.html'
+});
+
+if(error) throw error;
+
+showMessage('Recovery email sent.','success');
+
+}catch(err){
+showMessage(err.message || 'Failed to send email.','error');
+}
+
+btn.disabled=false;
+});
+
+/* =============================
+   TOGGLES
+============================= */
+
+document.getElementById('show-recovery').onclick=e=>{
+e.preventDefault();
+hideAllForms();
+recoveryForm.hidden=false;
 };
 
-document.getElementById('show-login').onclick = (e) => {
-  e.preventDefault();
-  hideAllForms();
-  loginForm.hidden = false;
+document.getElementById('show-login').onclick=e=>{
+e.preventDefault();
+hideAllForms();
+loginForm.hidden=false;
 };
 
-/* ---------------- AUTO SESSION ---------------- */
-supabase.auth.getSession().then(({ data }) => {
-  if (data.session) {
-    location.href = '/portal.html';
-  }
-});
+/* =============================
+   AUTO SESSION CHECK
+============================= */
+
+async function checkSession(){
+
+const {data:{session}}=
+await supabase.auth.getSession();
+
+if(session){
+go('/portal.html');
+}
+
+}
+
+checkSession();
+
 </script>
 
 </body>
