@@ -1,0 +1,6 @@
+{
+  "name": "Finance OS",
+  "description": "All-in-one money dashboard: budgeting, calculators, planning, and insights.",
+  "category": "Finance",
+  "entry": "/src/apps/finance-os/index.html"
+}

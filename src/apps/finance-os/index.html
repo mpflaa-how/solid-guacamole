@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Finance OS</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">Finance OS</div>
+  <div class="nav-links">
+    <a href="/src/index.html">← Workspace</a>
+  </div>
+</nav>
+
+<main class="dashboard">
+
+  <div class="card">
+    <h3>Finance OS</h3>
+    <p class="profile-muted">Your all‑in‑one money command center.</p>
+
+    <!-- Tabs -->
+    <div class="tab-row">
+      <button class="tab-btn" data-tab="assistant">Assistant</button>
+      <button class="tab-btn" data-tab="budget">Budget</button>
+      <button class="tab-btn" data-tab="calculator">Calculator</button>
+      <button class="tab-btn" data-tab="tools">Money Tools</button>
+    </div>
+  </div>
+
+  <!-- ASSISTANT -->
+  <div class="card tab" id="tab-assistant" hidden>
+    <h3>Finance Assistant</h3>
+    <textarea id="faInput" style="width:100%;height:120px;" placeholder="Ask a money question..."></textarea>
+    <button class="btn-primary" id="faSend">Ask</button>
+    <div id="faOutput" style="margin-top:1rem;"></div>
+  </div>
+
+  <!-- BUDGET -->
+  <div class="card tab" id="tab-budget" hidden>
+    <h3>Budget Tracker</h3>
+    <input id="bName" placeholder="Category" style="width:100%;margin-bottom:0.5rem;">
+    <input id="bAmount" placeholder="Amount" type="number" style="width:100%;margin-bottom:0.5rem;">
+    <button class="btn-primary" id="bAdd">Add Expense</button>
+    <div id="bList" style="margin-top:1rem;"></div>
+  </div>
+
+  <!-- CALCULATOR -->
+  <div class="card tab" id="tab-calculator" hidden style="max-width:300px;">
+    <h3>Calculator</h3>
+    <input id="calcDisplay" style="width:100%;font-size:1.5rem;margin-bottom:1rem;" readonly>
+    <div id="calcButtons" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;">
+      <button>7</button><button>8</button><button>9</button><button>/</button>
+      <button>4</button><button>5</button><button>6</button><button>*</button>
+      <button>1</button><button>2</button><button>3</button><button>-</button>
+      <button>0</button><button>.</button><button>=</button><button>+</button>
+    </div>
+  </div>
+
+  <!-- MONEY TOOLS -->
+  <div class="card tab" id="tab-tools" hidden>
+    <h3>MegaUseful Money Tools</h3>
+
+    <h4>Compound Interest</h4>
+    <input id="ciPrincipal" placeholder="Principal" type="number">
+    <input id="ciRate" placeholder="Rate (%)" type="number">
+    <input id="ciYears" placeholder="Years" type="number">
+    <button class="btn-primary" id="ciCalc">Calculate</button>
+    <div id="ciOut" style="margin-bottom:1rem;"></div>
+
+    <h4>Loan Payment</h4>
+    <input id="loanAmt" placeholder="Loan Amount" type="number">
+    <input id="loanRate" placeholder="Rate (%)" type="number">
+    <input id="loanYears" placeholder="Years" type="number">
+    <button class="btn-primary" id="loanCalc">Calculate</button>
+    <div id="loanOut"></div>
+  </div>
+
+</main>
+
+<script src="./script.js"></script>
+
+</body>
+</html>
