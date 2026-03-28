@@ -1,0 +1,6 @@
+{
+  "name": "Journal",
+  "description": "Private reflection and thinking space.",
+  "category": "Mind",
+  "entry": "/src/apps/journal/index.html"
+}
