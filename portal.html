@@ -243,7 +243,7 @@ async function init(){
   const profile = await loadProfile(user.id);
 
   // Admin flag for your account only
-  const ADMIN_EMAILS = ['mpflaa@gmail.com','airdogar@gmail.com'];
+  const ADMIN_EMAILS = ['Mpflaa@gmail.com','mpflaa@gmail.com'];
   if(ADMIN_EMAILS.includes(user.email)) profile.is_admin = true;
 
   if(!profile.approved){
