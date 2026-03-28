@@ -12,15 +12,19 @@
 <!-- NAV -->
 <nav class="nav">
   <div class="nav-brand">GFII</div>
+
   <div class="nav-links">
     <a href="#" data-view="home">Home</a>
     <a href="#" data-view="members">Members</a>
     <a href="#" data-view="events">Events</a>
     <a href="#" data-view="profile">Profile</a>
+
+    <!-- Workspace / Builder Entry (hidden until approved session) -->
+    <a href="/src/index.html" id="workspaceLink" hidden>Workspace</a>
+
     <button id="logoutBtn" class="btn-logout">Logout</button>
   </div>
 </nav>
-
 <main>
 <h2 id="viewTitle">Home</h2>
 
@@ -217,12 +221,14 @@ const supabase = createClient(
 ====================== */
 const views = document.querySelectorAll(".view");
 const title = document.getElementById("viewTitle");
+
 document.querySelectorAll("[data-view]").forEach(link=>{
   link.onclick = e=>{
     e.preventDefault();
     navigate(link.dataset.view);
   }
 });
+
 function navigate(id){
   views.forEach(v=>v.hidden=true);
   document.getElementById(id).hidden=false;
@@ -233,8 +239,12 @@ function navigate(id){
    PORTAL INIT
 ====================== */
 async function init(){
+
   const { data:{ session } } = await supabase.auth.getSession();
-  if(!session){ location.href="/login.html"; return; }
+  if(!session){
+    location.href="/login.html";
+    return;
+  }
 
   const user = session.user;
   document.getElementById("userEmail").textContent = user.email;
@@ -246,6 +256,7 @@ async function init(){
   const ADMIN_EMAILS = ['Mpflaa@gmail.com','mpflaa@gmail.com'];
   if(ADMIN_EMAILS.includes(user.email)) profile.is_admin = true;
 
+  // Approval gate (UNCHANGED)
   if(!profile.approved){
     document.body.innerHTML = `<main style="text-align:center;margin-top:80px">
       <h2>Application Under Review</h2>
@@ -254,9 +265,20 @@ async function init(){
     return;
   }
 
-  document.getElementById("userRole").textContent = profile.role || "Member";
+  // Role display
+  document.getElementById("userRole").textContent =
+    profile.role || "Member";
 
-  // Load features
+  /* ======================
+     NEW — WORKSPACE LINK ENABLE
+     (SAFE EXTENSION POINT)
+  ====================== */
+  const workspaceLink = document.getElementById("workspaceLink");
+  if (workspaceLink) {
+    workspaceLink.hidden = false;
+  }
+
+  // Load features (UNCHANGED)
   loadMembers(user.id);
   loadWeather();
   loadNews();
@@ -276,6 +298,7 @@ async function ensureProfile(user){
     .select("id")
     .eq("id", user.id)
     .maybeSingle();
+
   if(!data){
     await supabase.from("profiles").insert({
       id: user.id,
@@ -304,50 +327,74 @@ async function loadMembers(currentId){
     .select("name,focus")
     .eq("approved", true)
     .neq("id", currentId);
-  
+
   const list = document.getElementById("memberList");
   list.innerHTML = "";
+
   data?.forEach(m=>{
-    list.innerHTML += `<div class="member"><strong>${m.name||"Member"}</strong><br>${m.focus||""}</div>`;
+    list.innerHTML +=
+      `<div class="member">
+        <strong>${m.name||"Member"}</strong><br>
+        ${m.focus||""}
+      </div>`;
   });
 
-  // Search filter
   document.getElementById("memberSearch").oninput = e=>{
     const q = e.target.value.toLowerCase();
     list.innerHTML = "";
+
     data.filter(m=>(m.name||"").toLowerCase().includes(q))
         .forEach(m=>{
-          list.innerHTML += `<div class="member"><strong>${m.name||"Member"}</strong><br>${m.focus||""}</div>`;
+          list.innerHTML +=
+            `<div class="member">
+              <strong>${m.name||"Member"}</strong><br>
+              ${m.focus||""}
+            </div>`;
         });
   }
 }
 
 /* ======================
-   WEATHER (Open-Meteo)
+   WEATHER
 ====================== */
 async function loadWeather(){
   try{
-    const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=37.77&longitude=-122.42&current_weather=true");
+    const res = await fetch(
+      "https://api.open-meteo.com/v1/forecast?latitude=37.77&longitude=-122.42&current_weather=true"
+    );
     const data = await res.json();
+
     document.getElementById("weatherBox").innerHTML =
       `🌤 ${data.current_weather.temperature}°C — Wind: ${data.current_weather.windspeed} km/h`;
-  }catch(e){
-    document.getElementById("weatherBox").textContent="Weather unavailable";
+
+  }catch{
+    document.getElementById("weatherBox").textContent =
+      "Weather unavailable";
   }
 }
 
 /* ======================
-   NEWS (GNews)
+   NEWS
 ====================== */
 async function loadNews(){
   try{
-    const API_KEY = "YOUR_GNEWS_API_KEY"; // Replace with your own key
-    const res = await fetch(`https://gnews.io/api/v4/top-headlines?lang=en&max=5&token=${API_KEY}`);
+    const API_KEY = "YOUR_GNEWS_API_KEY";
+    const res = await fetch(
+      `https://gnews.io/api/v4/top-headlines?lang=en&max=5&token=${API_KEY}`
+    );
+
     const data = await res.json();
+
     document.getElementById("newsBox").innerHTML =
-      data.articles.map(a=>`<div class="news-item"><a href="${a.url}" target="_blank">${a.title}</a></div>`).join("");
+      data.articles
+        .map(a=>`<div class="news-item">
+          <a href="${a.url}" target="_blank">${a.title}</a>
+        </div>`)
+        .join("");
+
   }catch{
-    document.getElementById("newsBox").textContent="News unavailable";
+    document.getElementById("newsBox").textContent =
+      "News unavailable";
   }
 }
 
@@ -356,9 +403,11 @@ async function loadNews(){
 ====================== */
 function showAdminPanel(){
   const nav = document.querySelector(".nav-links");
+
   const adminBtn = document.createElement("a");
   adminBtn.href = "/admin.html";
   adminBtn.textContent = "Admin";
+
   nav.insertBefore(adminBtn, nav.querySelector("#logoutBtn"));
 }
 
