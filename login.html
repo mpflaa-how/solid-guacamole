@@ -4,23 +4,200 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GFII Login</title>
+
 <link rel="stylesheet" href="styles.css">
+
+<style>
+
+/* ===== PAGE ===== */
+
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:#0e0e10;
+  color:white;
+  overflow-x:hidden;
+}
+
+/* animated background (from index) */
+.bg{
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(201,169,110,.08), transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(201,169,110,.05), transparent 50%);
+  animation:drift 12s ease-in-out infinite alternate;
+  z-index:-1;
+}
+
+@keyframes drift{
+  from{transform:translateY(-10px);}
+  to{transform:translateY(10px);}
+}
+
+/* ===== NAV ===== */
+
+.nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 40px;
+}
+
+.nav a{
+  color:#aaa;
+  text-decoration:none;
+  margin-left:18px;
+}
+
+.nav a:hover{
+  color:#c9a96e;
+}
+
+.nav-brand{
+  letter-spacing:1px;
+}
+
+/* ===== CONTAINER ===== */
+
+.auth-wrap{
+  max-width:420px;
+  margin:90px auto;
+  text-align:center;
+}
+
+.divider{
+  width:80px;
+  height:1px;
+  margin:18px auto 28px;
+  background:linear-gradient(90deg,transparent,#c9a96e,transparent);
+}
+
+.subtitle{
+  color:#888;
+  margin-bottom:30px;
+  line-height:1.6;
+}
+
+/* ===== FORM ===== */
+
+.auth-form{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.auth-form input{
+  padding:14px;
+  background:#151517;
+  border:1px solid #2a2a2a;
+  border-radius:6px;
+  color:white;
+  font-size:.95rem;
+}
+
+.auth-form input:focus{
+  outline:none;
+  border-color:#c9a96e;
+  box-shadow:0 0 8px rgba(201,169,110,.2);
+}
+
+/* ===== BUTTON (INDEX STYLE) ===== */
+
+.auth-form button{
+  padding:14px;
+  border-radius:8px;
+  border:none;
+  background:#c9a96e;
+  color:#0e0e10;
+  font-weight:bold;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+}
+
+.auth-form button::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background:linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,.35),
+    transparent
+  );
+  transition:.5s;
+}
+
+.auth-form button:hover::after{
+  left:100%;
+}
+
+.auth-form button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 0 12px rgba(201,169,110,.25);
+}
+
+/* ===== LINKS ===== */
+
+.auth-links{
+  margin-top:8px;
+}
+
+.auth-links a{
+  color:#888;
+  font-size:.85rem;
+  text-decoration:none;
+}
+
+.auth-links a:hover{
+  color:#c9a96e;
+}
+
+/* ===== MESSAGE ===== */
+
+.message{
+  margin-bottom:16px;
+  padding:12px;
+  border-radius:6px;
+  font-size:.9rem;
+}
+
+.message.error{
+  background:#2b1111;
+  border:1px solid #5a1c1c;
+}
+
+.message.success{
+  background:#102817;
+  border:1px solid #1f5a32;
+}
+
+</style>
 </head>
 
 <body>
 
+<div class="bg"></div>
+
 <nav class="nav">
   <h1 class="nav-brand">GFII</h1>
-  <div class="nav-links">
+  <div>
     <a href="/">Home</a>
     <a href="/apply.html">Apply</a>
   </div>
 </nav>
 
-<main style="max-width:420px;margin:80px auto 0;">
+<main class="auth-wrap">
 
-<h2 style="text-align:center;">Member Access</h2>
-<p style="text-align:center;color:#888;">
+<h2>Member Access</h2>
+
+<div class="divider"></div>
+
+<p class="subtitle">
 Private entry for approved members only.
 </p>
 
@@ -51,26 +228,20 @@ Private entry for approved members only.
 </main>
 
 <script type="module">
-import { createClient } from
-'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-/* =============================
-   SUPABASE
-============================= */
+import { createClient }
+from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase=createClient(
 'https://adkljqadhghboezfazxz.supabase.co',
 'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6'
 );
 
-/* DOM */
 const loginForm=document.getElementById('login-form');
 const recoveryForm=document.getElementById('recovery-form');
 const msg=document.getElementById('auth-message');
 
 const go=(p)=>location.replace(p);
 
-/* MESSAGE */
 function showMessage(text,type='info'){
 msg.textContent=text;
 msg.className='message '+type;
@@ -83,10 +254,7 @@ recoveryForm.hidden=true;
 msg.hidden=true;
 }
 
-/* =============================
-   LOGIN
-============================= */
-
+/* LOGIN */
 loginForm.addEventListener('submit',async(e)=>{
 e.preventDefault();
 
@@ -100,8 +268,7 @@ btn.textContent='Entering…';
 try{
 
 const {error}=await supabase.auth.signInWithPassword({
-email,
-password
+email,password
 });
 
 if(error) throw error;
@@ -110,17 +277,14 @@ go('/portal.html');
 
 }catch(err){
 
-showMessage(err.message || 'Login failed.','error');
+showMessage(err.message||'Login failed.','error');
 btn.disabled=false;
 btn.textContent='Enter';
 
 }
 });
 
-/* =============================
-   PASSWORD RECOVERY
-============================= */
-
+/* RECOVERY */
 recoveryForm.addEventListener('submit',async(e)=>{
 e.preventDefault();
 
@@ -140,16 +304,13 @@ if(error) throw error;
 showMessage('Recovery email sent.','success');
 
 }catch(err){
-showMessage(err.message || 'Failed to send email.','error');
+showMessage(err.message||'Failed to send email.','error');
 }
 
 btn.disabled=false;
 });
 
-/* =============================
-   TOGGLES
-============================= */
-
+/* TOGGLES */
 document.getElementById('show-recovery').onclick=e=>{
 e.preventDefault();
 hideAllForms();
@@ -162,19 +323,14 @@ hideAllForms();
 loginForm.hidden=false;
 };
 
-/* =============================
-   AUTO SESSION CHECK
-============================= */
-
+/* SESSION CHECK */
 async function checkSession(){
-
 const {data:{session}}=
 await supabase.auth.getSession();
 
 if(session){
 go('/portal.html');
 }
-
 }
 
 checkSession();
