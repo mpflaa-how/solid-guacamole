@@ -3,23 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GFII Portal</title>
 
+<title>GFII Portal V3</title>
 <link rel="stylesheet" href="styles.css">
+
+<style>
+body{font-family:system-ui;background:#f4f6f8;margin:0}
+.nav{display:flex;justify-content:space-between;padding:14px 28px;background:#111;color:#fff}
+.nav a{color:white;margin-right:16px;text-decoration:none}
+main{max-width:1100px;margin:auto;padding:30px}
+.card{background:white;padding:20px;border-radius:12px;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.badge{background:#e8f7ef;color:#1c7c4d;padding:6px 10px;border-radius:20px;font-size:12px}
+.member{padding:10px;border-bottom:1px solid #eee}
+.news-item{margin-bottom:12px}
+</style>
 </head>
 
 <body>
 
 <!-- NAV -->
 <nav class="nav">
-  <div class="nav-brand">GFII</div>
-
-  <div class="nav-links">
-    <a href="#" onclick="showView('home')">Home</a>
-    <a href="#" onclick="showView('members')">Members</a>
-    <a href="#" onclick="showView('events')">Events</a>
-    <a href="#" onclick="showView('profile')">Profile</a>
-    <button class="btn-logout" id="logoutBtn">Logout</button>
+  <strong>GFII</strong>
+  <div>
+    <a href="#" data-view="home">Home</a>
+    <a href="#" data-view="members">Members</a>
+    <a href="#" data-view="events">Events</a>
+    <a href="#" data-view="profile">Profile</a>
+    <button id="logoutBtn">Logout</button>
   </div>
 </nav>
 
@@ -30,348 +41,279 @@
 <!-- HOME -->
 <section id="home" class="view">
 
-  <div class="dashboard">
+<div class="grid">
 
-    <!-- HEADER -->
-    <div class="dashboard-header">
-      <div>
-        <h2 class="dash-title">Welcome back</h2>
-        <p class="dash-subtitle">
-          Your private GFII environment.
-        </p>
-      </div>
+<div class="card">
+<h3>Member Environment</h3>
+<p>Private growth infrastructure for approved GFII members.</p>
+<span class="badge">Active Member</span>
+</div>
 
-      <div class="status-badge" id="memberStatus">
-        ● Active Member
-      </div>
-    </div>
+<div class="card">
+<h3>Weather</h3>
+<div id="weatherBox">Loading weather...</div>
+</div>
 
+<div class="card">
+<h3>Global News</h3>
+<div id="newsBox">Loading news...</div>
+</div>
 
-    <!-- GRID -->
-    <div class="portal-grid">
-
-      <!-- MEMBER CARD -->
-      <div class="card card-highlight">
-        <h3>Member Space</h3>
-        <p>
-          This environment is designed for focused growth,
-          meaningful connection, and intentional participation.
-        </p>
-
-        <div class="card-actions">
-          <button onclick="showView('events')" class="btn-ghost">
-            View Events
-          </button>
-
-          <button onclick="showView('profile')" class="btn-ghost">
-            Profile
-          </button>
-        </div>
-      </div>
-
-
-      <!-- STATUS CARD -->
-      <div class="card">
-        <h3>Account Status</h3>
-
-        <p id="statusText" class="status-text">
-          Checking membership…
-        </p>
-
-        <div class="status-meta">
-          Access Level: <strong>Member</strong><br>
-          Environment: <strong>Private</strong>
-        </div>
-      </div>
-
-
-      <!-- ACTIVITY -->
-      <div class="card span-2">
-        <h3>Latest Activity</h3>
-
-        <ul class="activity-list">
-          <li>Weekly Growth Call scheduled</li>
-          <li>New member admitted</li>
-          <li>Founder session announced</li>
-        </ul>
-      </div>
-
-    </div>
-
-  </div>
-
+</div>
 </section>
+
 
 <!-- MEMBERS -->
 <section id="members" class="view" hidden>
-
-  <div class="dashboard">
-
-    <!-- HEADER -->
-    <div class="dashboard-header">
-      <div>
-        <h2 class="dash-title">Member Directory</h2>
-        <p class="dash-subtitle">
-          Verified individuals inside the GFII network.
-        </p>
-      </div>
-
-      <div class="status-badge">
-        Private
-      </div>
-    </div>
-
-
-    <!-- DIRECTORY -->
-    <div class="card">
-
-      <!-- SEARCH -->
-      <div class="member-toolbar">
-        <input
-          id="memberSearch"
-          type="text"
-          placeholder="Search members..."
-          class="member-search"
-        >
-      </div>
-
-      <!-- MEMBER GRID -->
-      <div id="memberList" class="member-grid">
-        Loading members...
-      </div>
-
-    </div>
-
-  </div>
-
+<div class="card">
+<h3>Member Directory</h3>
+<input id="search" placeholder="Search members..." />
+<div id="memberList">Loading...</div>
+</div>
 </section>
+
 
 <!-- EVENTS -->
 <section id="events" class="view" hidden>
-  <div class="card">
-    <h3>Events</h3>
-    <ul>
-      <li>Weekly Growth Call</li>
-      <li>Founder Session</li>
-    </ul>
-  </div>
+<div class="card">
+<h3>Events</h3>
+<ul>
+<li>Weekly Growth Call</li>
+<li>Founder Session</li>
+</ul>
+</div>
 </section>
+
 
 <!-- PROFILE -->
 <section id="profile" class="view" hidden>
+<div class="card">
+<h3>Profile</h3>
 
-  <div class="dashboard">
+<p>Email: <strong id="userEmail"></strong></p>
+<p>Role: <strong id="userRole"></strong></p>
 
-    <!-- HEADER -->
-    <div class="dashboard-header">
-      <div>
-        <h2 class="dash-title">Member Profile</h2>
-        <p class="dash-subtitle">
-          Your identity inside the GFII network.
-        </p>
-      </div>
-
-      <div class="status-badge">
-        Verified
-      </div>
-    </div>
-
-
-    <!-- PROFILE GRID -->
-    <div class="portal-grid">
-
-      <!-- IDENTITY CARD -->
-      <div class="card card-highlight">
-        <h3>Account Identity</h3>
-
-        <div class="profile-row">
-          <span>Email</span>
-          <strong id="userEmail">—</strong>
-        </div>
-
-        <div class="profile-row">
-          <span>Role</span>
-          <strong id="userRole">—</strong>
-        </div>
-
-        <div class="profile-row">
-          <span>Membership</span>
-          <strong>Active</strong>
-        </div>
-      </div>
-
-
-      <!-- SECURITY -->
-      <div class="card">
-        <h3>Security</h3>
-
-        <p class="profile-muted">
-          Your access is secured through authenticated session identity.
-        </p>
-
-        <div class="card-actions">
-          <button onclick="location.href='/login.html'" class="btn-ghost">
-            Reset Password
-          </button>
-        </div>
-      </div>
-
-
-      <!-- PARTICIPATION -->
-      <div class="card span-2">
-        <h3>Participation</h3>
-
-        <p class="profile-muted">
-          Members are expected to engage intentionally.
-          Activity metrics and contributions will appear here
-          as the network evolves.
-        </p>
-
-        <ul class="activity-list">
-          <li>Account verified</li>
-          <li>Portal access granted</li>
-          <li>Member environment active</li>
-        </ul>
-      </div>
-
-    </div>
-
-  </div>
-
+</div>
 </section>
 
 </main>
 
+<!-- =========================
+     PORTAL ENGINE
+========================= -->
+
 <script type="module">
+
+/* =====================
+   SUPABASE
+===================== */
 
 import { createClient }
 from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
-  "https://adkljqadhghboezfazxz.supabase.co",
-  "sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6"
+"https://adkljqadhghboezfazxz.supabase.co",
+"sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6"
 );
 
-/* ======================
-   VIEW NAV
-====================== */
 
-window.showView = function(id){
+/* =====================
+   ROUTER
+===================== */
 
-  document.querySelectorAll(".view")
-    .forEach(v => v.hidden = true);
+const views = document.querySelectorAll(".view");
+const title = document.getElementById("viewTitle");
 
-  document.getElementById(id).hidden = false;
+document.querySelectorAll("[data-view]")
+.forEach(link=>{
+  link.onclick=e=>{
+    e.preventDefault();
+    navigate(link.dataset.view);
+  };
+});
 
-  viewTitle.textContent =
-    id.charAt(0).toUpperCase()+id.slice(1);
+function navigate(id){
+  views.forEach(v=>v.hidden=true);
+  document.getElementById(id).hidden=false;
+  title.textContent=id.charAt(0).toUpperCase()+id.slice(1);
 }
 
-/* ======================
-   INIT PORTAL
-====================== */
+
+/* =====================
+   AUTH INIT
+===================== */
 
 async function init(){
 
-  const { data:{ session } }
-    = await supabase.auth.getSession();
+const { data:{ session } }
+ = await supabase.auth.getSession();
 
-  // Not logged in
-  if(!session){
-    location.href="/login.html";
-    return;
-  }
-
-  const user = session.user;
-  userEmail.textContent = user.email;
-
-  await ensureProfile(user);
-
-  const profile = await loadProfile(user.id);
-
-  // APPROVAL GATE
-  if(!profile.approved){
-    document.body.innerHTML = `
-      <main style="text-align:center;margin-top:80px">
-        <h2>Application Under Review</h2>
-        <p>Access unlocks after approval.</p>
-      </main>
-    `;
-    return;
-  }
-
-  userRole.textContent = profile.role || "member";
-  statusText.textContent = "Access granted";
-
-  loadMembers(user.id);
+if(!session){
+ location.href="/login.html";
+ return;
 }
 
-/* ======================
-   CREATE PROFILE
-====================== */
+const user=session.user;
+userEmail.textContent=user.email;
+
+await ensureProfile(user);
+
+const profile=await getProfile(user.id);
+
+if(!profile.approved){
+document.body.innerHTML=`
+<main style="text-align:center;margin-top:80px">
+<h2>Application Under Review</h2>
+<p>Access unlocks after approval.</p>
+</main>`;
+return;
+}
+
+userRole.textContent=profile.role||"member";
+
+loadMembers(user.id);
+loadWeather();
+loadNews();
+
+}
+
+
+/* =====================
+   PROFILE SYSTEM
+===================== */
 
 async function ensureProfile(user){
 
-  const { data } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", user.id)
-    .maybeSingle();
+const { data } = await supabase
+.from("profiles")
+.select("id")
+.eq("id",user.id)
+.maybeSingle();
 
-  if(!data){
-    await supabase.from("profiles").insert({
-      id:user.id,
-      email:user.email
-    });
-  }
+if(!data){
+ await supabase.from("profiles").insert({
+   id:user.id,
+   email:user.email,
+   approved:false
+ });
 }
 
-/* ======================
-   LOAD PROFILE
-====================== */
-
-async function loadProfile(id){
-
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  return data;
 }
 
-/* ======================
+async function getProfile(id){
+
+const { data } = await supabase
+.from("profiles")
+.select("*")
+.eq("id",id)
+.single();
+
+return data;
+}
+
+
+/* =====================
    MEMBER DIRECTORY
-====================== */
+===================== */
 
 async function loadMembers(currentId){
 
-  const { data } = await supabase
-    .from("profiles")
-    .select("name,focus")
-    .eq("approved", true)
-    .neq("id", currentId);
+const { data } = await supabase
+.from("profiles")
+.select("name,focus")
+.eq("approved",true)
+.neq("id",currentId);
 
-  const list = document.getElementById("memberList");
+renderMembers(data);
 
-  list.innerHTML = "";
+document.getElementById("search")
+.oninput=e=>{
+ const q=e.target.value.toLowerCase();
+ renderMembers(
+   data.filter(m=>
+     (m.name||"").toLowerCase().includes(q)
+   )
+ );
+};
 
-  data?.forEach(m=>{
-    list.innerHTML += `
-      <p><strong>${m.name || "Member"}</strong>
-      — ${m.focus || ""}</p>
-    `;
-  });
 }
 
-/* ======================
-   LOGOUT
-====================== */
+function renderMembers(list){
 
-logoutBtn.onclick = async ()=>{
-  await supabase.auth.signOut();
-  location.href="/login.html";
+const el=document.getElementById("memberList");
+el.innerHTML="";
+
+list.forEach(m=>{
+ el.innerHTML+=`
+ <div class="member">
+ <strong>${m.name||"Member"}</strong><br>
+ ${m.focus||""}
+ </div>`;
+});
+
+}
+
+
+/* =====================
+   WEATHER (FREE API)
+===================== */
+
+async function loadWeather(){
+
+// San Francisco coords example
+const res=await fetch(
+"https://api.open-meteo.com/v1/forecast?latitude=37.77&longitude=-122.42&current_weather=true"
+);
+
+const data=await res.json();
+
+weatherBox.innerHTML=`
+🌤 ${data.current_weather.temperature}°C<br>
+Wind: ${data.current_weather.windspeed} km/h
+`;
+
+}
+
+
+/* =====================
+   NEWS API
+===================== */
+
+async function loadNews(){
+
+// GET FREE KEY → https://gnews.io
+const API_KEY="YOUR_GNEWS_API_KEY";
+
+try{
+
+const res=await fetch(
+`https://gnews.io/api/v4/top-headlines?lang=en&max=5&token=${API_KEY}`
+);
+
+const data=await res.json();
+
+newsBox.innerHTML=data.articles.map(a=>`
+<div class="news-item">
+<a href="${a.url}" target="_blank">
+${a.title}
+</a>
+</div>
+`).join("");
+
+}catch{
+newsBox.innerHTML="News unavailable.";
+}
+
+}
+
+
+/* =====================
+   LOGOUT
+===================== */
+
+logoutBtn.onclick=async()=>{
+await supabase.auth.signOut();
+location.href="/login.html";
 };
 
 init();
