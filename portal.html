@@ -36,29 +36,48 @@
     </div>
 
     <div class="portal-grid">
-      <!-- MEMBER CARD -->
-      <div class="card card-highlight">
-        <h3>Member Space</h3>
-        <p>This environment is designed for focused growth, meaningful connection, and intentional participation.</p>
-        <div class="card-actions">
-          <button onclick="showView('events')" class="btn-ghost">View Events</button>
-          <button onclick="showView('profile')" class="btn-ghost">Profile</button>
-        </div>
-      </div>
 
-      <!-- WEATHER CARD -->
-      <div class="card">
-        <h3>Weather</h3>
-        <div id="weatherBox">Loading weather...</div>
-      </div>
+  <!-- MEMBER CARD -->
+  <div class="card card-highlight">
+    <div class="card-meta"><span class="card-label">GFII Environment</span></div>
+    <h3>Member Space</h3>
+    <p>
+      Your private operating layer inside GFII — built for focused growth,
+      high‑signal connection, and intentional participation.
+    </p>
 
-      <!-- NEWS CARD -->
-      <div class="card span-2">
-        <h3>Global News</h3>
-        <div id="newsBox">Loading news...</div>
-      </div>
+    <ul class="card-bullets">
+      <li>Navigate directly into active spaces</li>
+      <li>Stay aligned with network activity</li>
+      <li>Move with clarity and intention</li>
+    </ul>
+
+    <div class="card-actions">
+      <button onclick="showView('events')" class="btn-ghost">Explore Events</button>
+      <button onclick="showView('profile')" class="btn-ghost">View Profile</button>
     </div>
   </div>
+
+  <!-- WEATHER CARD -->
+  <div class="card">
+    <div class="card-meta"><span class="card-label">Local Context</span></div>
+    <h3>Weather</h3>
+    <p class="profile-muted">A quick environmental snapshot to support your day.</p>
+    <div id="weatherBox" class="metric-block">Loading weather...</div>
+  </div>
+
+  <!-- NEWS CARD -->
+  <div class="card span-2">
+    <div class="card-meta"><span class="card-label">Global Signal</span></div>
+    <h3>Global News</h3>
+    <p class="profile-muted">
+      A curated stream of external signals — stay informed without leaving the portal.
+    </p>
+    <div id="newsBox" class="news-feed">Loading news...</div>
+  </div>
+
+</div>
+
 </section>
 
 <!-- MEMBERS -->
@@ -73,10 +92,23 @@
     </div>
 
     <div class="card">
-      <input id="memberSearch" type="text" placeholder="Search members..." class="member-search">
-      <div id="memberList" class="member-grid">Loading members...</div>
-    </div>
-  </div>
+  <div class="card-meta"><span class="card-label">Network</span></div>
+  <h3>Member Directory</h3>
+  <p class="profile-muted">
+    Explore verified individuals inside the GFII network.  
+    This directory is private, curated, and built for high‑trust connection.
+  </p>
+
+  <input
+    id="memberSearch"
+    type="text"
+    placeholder="Search by name or focus area..."
+    class="member-search"
+  >
+
+  <div id="memberList" class="member-grid">Loading members...</div>
+</div>
+
 </section>
 
 <!-- EVENTS -->
@@ -102,34 +134,72 @@
     </div>
 
     <div class="portal-grid">
-      <div class="card card-highlight">
-        <h3>Account Identity</h3>
-        <div class="profile-row"><span>Email</span> <strong id="userEmail">—</strong></div>
-        <div class="profile-row"><span>Role</span> <strong id="userRole">—</strong></div>
-        <div class="profile-row"><span>Membership</span> <strong>Active</strong></div>
-      </div>
 
-      <div class="card">
-        <h3>Security</h3>
-        <p class="profile-muted">Your access is secured through authenticated session identity.</p>
-        <div class="card-actions">
-          <button onclick="location.href='/login.html'" class="btn-ghost">Reset Password</button>
-        </div>
-      </div>
+  <!-- ACCOUNT IDENTITY -->
+  <div class="card card-highlight">
+    <div class="card-meta"><span class="card-label">Identity</span></div>
+    <h3>Account Identity</h3>
+    <p class="profile-muted">
+      Your canonical identity inside GFII — used across sessions, events, and member spaces.
+    </p>
 
-      <div class="card span-2">
-        <h3>Participation</h3>
-        <p class="profile-muted">
-          Members are expected to engage intentionally. Activity metrics and contributions will appear here as the network evolves.
-        </p>
-        <ul class="activity-list">
-          <li>Account verified</li>
-          <li>Portal access granted</li>
-          <li>Member environment active</li>
-        </ul>
-      </div>
+    <div class="profile-row">
+      <span>Email</span>
+      <strong id="userEmail">—</strong>
+    </div>
+
+    <div class="profile-row">
+      <span>Role</span>
+      <strong id="userRole">—</strong>
+    </div>
+
+    <div class="profile-row">
+      <span>Membership</span>
+      <strong>Active</strong>
     </div>
   </div>
+
+  <!-- SECURITY -->
+  <div class="card">
+    <div class="card-meta"><span class="card-label">Security</span></div>
+    <h3>Security</h3>
+    <p class="profile-muted">
+      Your access is protected through authenticated session identity.  
+      Maintain clean credential hygiene to preserve security.
+    </p>
+
+    <ul class="card-bullets">
+      <li>Session‑based authentication</li>
+      <li>Access revocable at any time</li>
+      <li>Credentials managed externally</li>
+    </ul>
+
+    <div class="card-actions">
+      <button onclick="location.href='/login.html'" class="btn-ghost">Reset Password</button>
+    </div>
+  </div>
+
+  <!-- PARTICIPATION -->
+  <div class="card span-2">
+    <div class="card-meta"><span class="card-label">Participation</span></div>
+    <h3>Participation & Presence</h3>
+    <p class="profile-muted">
+      GFII is participation‑driven. Over time, this space will reflect your presence,
+      contributions, and engagement across the network.
+    </p>
+
+    <ul class="activity-list">
+      <li>Account verified</li>
+      <li>Portal access granted</li>
+      <li>Member environment active</li>
+    </ul>
+
+    <p class="profile-muted" style="margin-top: 12px;">
+      Additional participation metrics will surface as the network evolves.
+    </p>
+  </div>
+</div>
+
 </section>
 
 </main>
