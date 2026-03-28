@@ -142,23 +142,26 @@ const supabase = createClient(
   "sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6"
 );
 
-/* VIEW NAV */
+/* ======================
+   VIEW NAVIGATION
+====================== */
 const views = document.querySelectorAll(".view");
 const title = document.getElementById("viewTitle");
 document.querySelectorAll("[data-view]").forEach(link=>{
-  link.onclick = e => {
+  link.onclick = e=>{
     e.preventDefault();
     navigate(link.dataset.view);
   }
 });
-
 function navigate(id){
-  views.forEach(v => v.hidden = true);
-  document.getElementById(id).hidden = false;
-  title.textContent = id.charAt(0).toUpperCase() + id.slice(1);
+  views.forEach(v=>v.hidden=true);
+  document.getElementById(id).hidden=false;
+  title.textContent = id.charAt(0).toUpperCase()+id.slice(1);
 }
 
-/* INIT PORTAL */
+/* ======================
+   PORTAL INIT
+====================== */
 async function init(){
   const { data:{ session } } = await supabase.auth.getSession();
   if(!session){ location.href="/login.html"; return; }
@@ -168,6 +171,10 @@ async function init(){
 
   await ensureProfile(user);
   const profile = await loadProfile(user.id);
+
+  // Admin flag for your account only
+  const ADMIN_EMAILS = ['mpflaa@gmail.com','airdogar@gmail.com'];
+  if(ADMIN_EMAILS.includes(user.email)) profile.is_admin = true;
 
   if(!profile.approved){
     document.body.innerHTML = `<main style="text-align:center;margin-top:80px">
@@ -179,68 +186,115 @@ async function init(){
 
   document.getElementById("userRole").textContent = profile.role || "Member";
 
+  // Load features
   loadMembers(user.id);
   loadWeather();
   loadNews();
+
+  // Show admin panel if applicable
+  if(profile.is_admin){
+    showAdminPanel();
+  }
 }
 
-/* PROFILE SYSTEM */
+/* ======================
+   PROFILE SYSTEM
+====================== */
 async function ensureProfile(user){
-  const { data } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+  const { data } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
   if(!data){
-    await supabase.from("profiles").insert({ id:user.id, email:user.email, approved:false });
+    await supabase.from("profiles").insert({
+      id: user.id,
+      email: user.email,
+      approved: false,
+      is_admin: false
+    });
   }
 }
 
 async function loadProfile(id){
-  const { data } = await supabase.from("profiles").select("*").eq("id", id).single();
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", id)
+    .single();
   return data;
 }
 
-/* MEMBER DIRECTORY */
+/* ======================
+   MEMBER DIRECTORY
+====================== */
 async function loadMembers(currentId){
-  const { data } = await supabase.from("profiles").select("name,focus").eq("approved",true).neq("id",currentId);
+  const { data } = await supabase
+    .from("profiles")
+    .select("name,focus")
+    .eq("approved", true)
+    .neq("id", currentId);
+  
   const list = document.getElementById("memberList");
   list.innerHTML = "";
   data?.forEach(m=>{
     list.innerHTML += `<div class="member"><strong>${m.name||"Member"}</strong><br>${m.focus||""}</div>`;
   });
 
+  // Search filter
   document.getElementById("memberSearch").oninput = e=>{
     const q = e.target.value.toLowerCase();
     list.innerHTML = "";
-    data.filter(m=> (m.name||"").toLowerCase().includes(q) ).forEach(m=>{
-      list.innerHTML += `<div class="member"><strong>${m.name||"Member"}</strong><br>${m.focus||""}</div>`;
-    });
+    data.filter(m=>(m.name||"").toLowerCase().includes(q))
+        .forEach(m=>{
+          list.innerHTML += `<div class="member"><strong>${m.name||"Member"}</strong><br>${m.focus||""}</div>`;
+        });
   }
 }
 
-/* WEATHER API (OPEN-METEO) */
+/* ======================
+   WEATHER (Open-Meteo)
+====================== */
 async function loadWeather(){
   try{
     const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=37.77&longitude=-122.42&current_weather=true");
     const data = await res.json();
-    document.getElementById("weatherBox").innerHTML = `🌤 ${data.current_weather.temperature}°C — Wind: ${data.current_weather.windspeed} km/h`;
+    document.getElementById("weatherBox").innerHTML =
+      `🌤 ${data.current_weather.temperature}°C — Wind: ${data.current_weather.windspeed} km/h`;
   }catch(e){
     document.getElementById("weatherBox").textContent="Weather unavailable";
   }
 }
 
-/* NEWS API (PUBLIC) */
+/* ======================
+   NEWS (GNews)
+====================== */
 async function loadNews(){
   try{
-    const API_KEY = "YOUR_GNEWS_API_KEY";
+    const API_KEY = "YOUR_GNEWS_API_KEY"; // Replace with your own key
     const res = await fetch(`https://gnews.io/api/v4/top-headlines?lang=en&max=5&token=${API_KEY}`);
     const data = await res.json();
-    document.getElementById("newsBox").innerHTML = data.articles.map(a=>`
-      <div class="news-item"><a href="${a.url}" target="_blank">${a.title}</a></div>
-    `).join("");
+    document.getElementById("newsBox").innerHTML =
+      data.articles.map(a=>`<div class="news-item"><a href="${a.url}" target="_blank">${a.title}</a></div>`).join("");
   }catch{
     document.getElementById("newsBox").textContent="News unavailable";
   }
 }
 
-/* LOGOUT */
+/* ======================
+   ADMIN PANEL
+====================== */
+function showAdminPanel(){
+  const nav = document.querySelector(".nav-links");
+  const adminBtn = document.createElement("a");
+  adminBtn.href = "/admin.html";
+  adminBtn.textContent = "Admin";
+  nav.insertBefore(adminBtn, nav.querySelector("#logoutBtn"));
+}
+
+/* ======================
+   LOGOUT
+====================== */
 document.getElementById("logoutBtn").onclick = async ()=>{
   await supabase.auth.signOut();
   location.href="/login.html";
@@ -248,6 +302,5 @@ document.getElementById("logoutBtn").onclick = async ()=>{
 
 init();
 </script>
-
 </body>
 </html>
