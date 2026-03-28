@@ -1,188 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GFII Dashboard</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GFII Portal</title>
 
-  <style>
-    .dashboard {
-      max-width: 1100px;
-      margin: 40px auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
+<link rel="stylesheet" href="styles.css">
 
-    .card h3 {
-      margin-bottom: 16px;
-      color: #c9a96e;
-      font-size: 0.9rem;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
+<style>
+body{
+  margin:0;
+  background:#0b0c0f;
+  color:#fff;
+  font-family:Segoe UI,system-ui;
+}
 
-    .profile-name {
-      font-size: 1.4rem;
-      font-weight: bold;
-      margin-bottom: 6px;
-    }
+.loader{
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#aaa;
+}
 
-    .profile-statement {
-      color: #aaa;
-      margin-bottom: 10px;
-    }
+.app{
+  display:none;
+  grid-template-columns:240px 1fr;
+  min-height:100vh;
+}
 
-    .badge {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 6px;
-      background: rgba(201,169,110,0.15);
-      color: #c9a96e;
-      font-size: 0.8rem;
-    }
+/* SIDEBAR */
+.sidebar{
+  background:#0f1116;
+  border-right:1px solid rgba(255,255,255,.05);
+  padding:28px 20px;
+}
 
-    .member {
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
+.brand{
+  color:#c9a96e;
+  letter-spacing:2px;
+  margin-bottom:40px;
+}
 
-    .member:last-child {
-      border-bottom: none;
-    }
+.nav-link{
+  display:block;
+  padding:12px;
+  margin-bottom:6px;
+  border-radius:8px;
+  color:#aaa;
+  text-decoration:none;
+}
 
-    .member strong {
-      color: #fff;
-    }
+.nav-link:hover{
+  background:rgba(201,169,110,.12);
+  color:#fff;
+}
 
-    .member p {
-      margin: 4px 0;
-      color: #888;
-      font-size: 0.9rem;
-    }
+/* MAIN */
+.main{ padding:40px; }
 
-    .member a {
-      font-size: 0.85rem;
-    }
+.dashboard{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:24px;
+}
 
-    .status-box {
-      font-size: 0.95rem;
-      color: #bbb;
-      line-height: 1.6;
-    }
-  </style>
+.card{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:14px;
+  padding:22px;
+}
+
+.card h3{
+  font-size:.8rem;
+  letter-spacing:2px;
+  color:#c9a96e;
+  margin-bottom:18px;
+}
+
+.logout{
+  background:none;
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;
+  padding:8px 14px;
+  border-radius:6px;
+  cursor:pointer;
+}
+</style>
 </head>
 
 <body>
 
-<nav class="nav">
-  <h1 class="nav-brand">GFII</h1>
-  <button id="logout-btn" class="btn-logout" hidden>Log Out</button>
-</nav>
+<!-- LOADING SCREEN -->
+<div id="loader" class="loader">Entering GFII…</div>
 
-<main class="dashboard">
+<!-- APP -->
+<div id="app" class="app">
 
-  <!-- PROFILE -->
-  <section class="card">
-    <h3>Your Identity</h3>
-    <div id="profile"></div>
-  </section>
+<aside class="sidebar">
+  <div class="brand">GFII</div>
+  <a class="nav-link">Dashboard</a>
+  <a class="nav-link">Members</a>
+  <a class="nav-link">Settings</a>
+</aside>
 
-  <!-- STATUS -->
-  <section class="card">
-    <h3>Status</h3>
-    <div id="status"></div>
-  </section>
+<div class="main">
 
-  <!-- MEMBERS -->
-  <section class="card">
-    <h3>Members</h3>
-    <div id="members"></div>
-  </section>
+<div style="display:flex;justify-content:space-between;margin-bottom:30px;">
+<h2>Member Dashboard</h2>
+<button id="logout-btn" class="logout">Logout</button>
+</div>
 
-  <!-- FUTURE ACTIONS -->
-  <section class="card">
-    <h3>Access</h3>
-    <div class="status-box">
-      <p>✔ You are an approved member</p>
-      <p>✔ Profile initialized</p>
-      <p style="margin-top:10px;">More features unlocking soon.</p>
-    </div>
-  </section>
+<div class="dashboard">
 
-</main>
+<section class="card">
+<h3>Your Identity</h3>
+<div id="profile"></div>
+</section>
+
+<section class="card">
+<h3>Status</h3>
+<div id="status"></div>
+</section>
+
+<section class="card">
+<h3>Members</h3>
+<div id="members"></div>
+</section>
+
+<section class="card">
+<h3>Access</h3>
+✔ Approved Member<br>
+✔ Profile Initialized<br><br>
+New capabilities unlock progressively.
+</section>
+
+</div>
+</div>
+</div>
 
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from
+'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 /* =============================
    SUPABASE
 ============================= */
-const supabase = createClient(
-  'https://adkljqadhghboezfazxz.supabase.co',
-  'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6'
+
+const supabase=createClient(
+'https://adkljqadhghboezfazxz.supabase.co',
+'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6'
 );
 
-/* =============================
-   DOM
-============================= */
-const logoutBtn = document.getElementById('logout-btn');
-const profileEl = document.getElementById('profile');
-const statusEl = document.getElementById('status');
-const membersEl = document.getElementById('members');
+/* DOM */
+const loader=document.getElementById('loader');
+const app=document.getElementById('app');
+const logoutBtn=document.getElementById('logout-btn');
 
-let currentUser = null;
+const profileEl=document.getElementById('profile');
+const statusEl=document.getElementById('status');
+const membersEl=document.getElementById('members');
+
+let user;
+
+/* redirect helper */
+const go=(p)=>location.replace(p);
 
 /* =============================
-   SAFE REDIRECT
+   BOOT PORTAL
 ============================= */
-function redirect(path) {
-  window.location.replace(path);
+
+async function boot(){
+
+const {data:{session}}=
+await supabase.auth.getSession();
+
+if(!session){
+go('/login.html');
+return;
+}
+
+user=session.user;
+
+/* approval check */
+const {data:approved}=await supabase
+.from('approved_users')
+.select('user_id')
+.eq('user_id',user.id)
+.maybeSingle();
+
+if(!approved){
+go('/not-approved.html');
+return;
+}
+
+/* profile check */
+const {data:profile}=await supabase
+.from('profiles')
+.select('*')
+.eq('id',user.id)
+.maybeSingle();
+
+if(!profile || !profile.onboarding_complete){
+go('/onboarding.html');
+return;
+}
+
+/* render UI */
+renderProfile(profile);
+renderStatus(profile);
+loadMembers();
+
+/* reveal app */
+loader.style.display='none';
+app.style.display='grid';
 }
 
 /* =============================
-   INIT
+   RENDER
 ============================= */
-async function initPortal() {
-  const { data: { session } } = await supabase.auth.getSession();
 
-  if (!session) {
-    location.replace('/login.html');
-    return;
-  }
-
-  const user = session.user;
-
-  // ✅ approval
-  const { data: approved } = await supabase
-    .from('approved_users')
-    .select('user_id')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  if (!approved) {
-    location.replace('/not-approved.html');
-    return;
-  }
-
-  // ✅ profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('onboarding_complete')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (!profile || !profile.onboarding_complete) {
-    location.replace('/onboarding.html');
-    return;
-  }
-
-  // ✅ SUCCESS → go to dashboard ONLY
-  location.replace('/dashboard.html');
+function renderProfile(p){
+profileEl.innerHTML=`
+<div style="font-size:1.4rem;font-weight:600">${p.name}</div>
+<div style="color:#aaa">${p.statement||''}</div>
+<div style="color:#c9a96e;margin-top:8px">${p.focus||'Member'}</div>
+`;
 }
 
-initPortal();
+function renderStatus(p){
+statusEl.innerHTML=`
+Alias: ${p.alias||'—'}<br>
+Focus: ${p.focus||'—'}<br>
+Member Since:
+${new Date(p.created_at).toLocaleDateString()}
+`;
+}
+
+/* MEMBERS */
+async function loadMembers(){
+
+const {data}=await supabase
+.from('profiles')
+.select('id,name,focus')
+.neq('id',user.id)
+.limit(5);
+
+if(!data?.length){
+membersEl.innerHTML='No members yet.';
+return;
+}
+
+membersEl.innerHTML=data.map(m=>`
+<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+<strong>${m.name}</strong><br>
+<span style="color:#888">${m.focus||''}</span>
+</div>
+`).join('');
+}
+
+/* LOGOUT */
+logoutBtn.onclick=async()=>{
+await supabase.auth.signOut();
+go('/login.html');
+};
+
+supabase.auth.onAuthStateChange(e=>{
+if(e==='SIGNED_OUT') go('/login.html');
+});
+
+boot();
 </script>
 
 </body>
