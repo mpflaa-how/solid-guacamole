@@ -19,12 +19,13 @@
     <a href="#" data-view="events">Events</a>
     <a href="#" data-view="profile">Profile</a>
 
-    <!-- Workspace / Builder Entry (hidden until approved session) -->
+    <!-- Workspace unlocked after login -->
     <a href="/src/index.html" id="workspaceLink" hidden>Workspace</a>
 
     <button id="logoutBtn" class="btn-logout">Logout</button>
   </div>
 </nav>
+
 <main>
 <h2 id="viewTitle">Home</h2>
 
@@ -36,83 +37,45 @@
         <h2 class="dash-title">Welcome back</h2>
         <p class="dash-subtitle">Your private GFII environment.</p>
       </div>
-      <div class="status-badge" id="memberStatus">● Active Member</div>
+      <div class="status-badge">● Active Member</div>
     </div>
 
     <div class="portal-grid">
 
-  <!-- MEMBER CARD -->
-  <div class="card card-highlight">
-    <div class="card-meta"><span class="card-label">GFII Environment</span></div>
-    <h3>Member Space</h3>
-    <p>
-      Your private operating layer inside GFII — built for focused growth,
-      high‑signal connection, and intentional participation.
-    </p>
+      <div class="card card-highlight">
+        <div class="card-meta"><span class="card-label">GFII Environment</span></div>
+        <h3>Member Space</h3>
+        <p>Your private operating layer inside GFII.</p>
 
-    <ul class="card-bullets">
-      <li>Navigate directly into active spaces</li>
-      <li>Stay aligned with network activity</li>
-      <li>Move with clarity and intention</li>
-    </ul>
+        <div class="card-actions">
+          <button onclick="navigate('events')" class="btn-ghost">Explore Events</button>
+          <button onclick="navigate('profile')" class="btn-ghost">View Profile</button>
+        </div>
+      </div>
 
-    <div class="card-actions">
-      <button onclick="showView('events')" class="btn-ghost">Explore Events</button>
-      <button onclick="showView('profile')" class="btn-ghost">View Profile</button>
+      <div class="card">
+        <div class="card-meta"><span class="card-label">Local Context</span></div>
+        <h3>Weather</h3>
+        <div id="weatherBox">Loading weather...</div>
+      </div>
+
+      <div class="card span-2">
+        <div class="card-meta"><span class="card-label">Global Signal</span></div>
+        <h3>Global News</h3>
+        <div id="newsBox">Loading news...</div>
+      </div>
+
     </div>
   </div>
-
-  <!-- WEATHER CARD -->
-  <div class="card">
-    <div class="card-meta"><span class="card-label">Local Context</span></div>
-    <h3>Weather</h3>
-    <p class="profile-muted">A quick environmental snapshot to support your day.</p>
-    <div id="weatherBox" class="metric-block">Loading weather...</div>
-  </div>
-
-  <!-- NEWS CARD -->
-  <div class="card span-2">
-    <div class="card-meta"><span class="card-label">Global Signal</span></div>
-    <h3>Global News</h3>
-    <p class="profile-muted">
-      A curated stream of external signals — stay informed without leaving the portal.
-    </p>
-    <div id="newsBox" class="news-feed">Loading news...</div>
-  </div>
-
-</div>
-
 </section>
 
 <!-- MEMBERS -->
 <section id="members" class="view" hidden>
-  <div class="dashboard">
-    <div class="dashboard-header">
-      <div>
-        <h2 class="dash-title">Member Directory</h2>
-        <p class="dash-subtitle">Verified individuals inside the GFII network.</p>
-      </div>
-      <div class="status-badge">Private</div>
-    </div>
-
-    <div class="card">
-  <div class="card-meta"><span class="card-label">Network</span></div>
-  <h3>Member Directory</h3>
-  <p class="profile-muted">
-    Explore verified individuals inside the GFII network.  
-    This directory is private, curated, and built for high‑trust connection.
-  </p>
-
-  <input
-    id="memberSearch"
-    type="text"
-    placeholder="Search by name or focus area..."
-    class="member-search"
-  >
-
-  <div id="memberList" class="member-grid">Loading members...</div>
-</div>
-
+  <div class="card">
+    <h3>Member Directory</h3>
+    <input id="memberSearch" placeholder="Search members..." />
+    <div id="memberList">Loading members...</div>
+  </div>
 </section>
 
 <!-- EVENTS -->
@@ -128,82 +91,16 @@
 
 <!-- PROFILE -->
 <section id="profile" class="view" hidden>
-  <div class="dashboard">
-    <div class="dashboard-header">
-      <div>
-        <h2 class="dash-title">Member Profile</h2>
-        <p class="dash-subtitle">Your identity inside the GFII network.</p>
-      </div>
-      <div class="status-badge">Verified</div>
-    </div>
-
-    <div class="portal-grid">
-
-  <!-- ACCOUNT IDENTITY -->
-  <div class="card card-highlight">
-    <div class="card-meta"><span class="card-label">Identity</span></div>
-    <h3>Account Identity</h3>
-    <p class="profile-muted">
-      Your canonical identity inside GFII — used across sessions, events, and member spaces.
-    </p>
-
-    <div class="profile-row">
-      <span>Email</span>
-      <strong id="userEmail">—</strong>
-    </div>
-
-    <div class="profile-row">
-      <span>Role</span>
-      <strong id="userRole">—</strong>
-    </div>
-
-    <div class="profile-row">
-      <span>Membership</span>
-      <strong>Active</strong>
-    </div>
-  </div>
-
-  <!-- SECURITY -->
   <div class="card">
-    <div class="card-meta"><span class="card-label">Security</span></div>
-    <h3>Security</h3>
-    <p class="profile-muted">
-      Your access is protected through authenticated session identity.  
-      Maintain clean credential hygiene to preserve security.
-    </p>
+    <h3>Profile</h3>
 
-    <ul class="card-bullets">
-      <li>Session‑based authentication</li>
-      <li>Access revocable at any time</li>
-      <li>Credentials managed externally</li>
-    </ul>
+    <p>Email: <strong id="userEmail">—</strong></p>
+    <p>Role: <strong id="userRole">Member</strong></p>
 
-    <div class="card-actions">
-      <button onclick="location.href='/login.html'" class="btn-ghost">Reset Password</button>
-    </div>
+    <button onclick="location.href='/login.html'" class="btn-ghost">
+      Reset Password
+    </button>
   </div>
-
-  <!-- PARTICIPATION -->
-  <div class="card span-2">
-    <div class="card-meta"><span class="card-label">Participation</span></div>
-    <h3>Participation & Presence</h3>
-    <p class="profile-muted">
-      GFII is participation‑driven. Over time, this space will reflect your presence,
-      contributions, and engagement across the network.
-    </p>
-
-    <ul class="activity-list">
-      <li>Account verified</li>
-      <li>Portal access granted</li>
-      <li>Member environment active</li>
-    </ul>
-
-    <p class="profile-muted" style="margin-top: 12px;">
-      Additional participation metrics will surface as the network evolves.
-    </p>
-  </div>
-</div>
-
 </section>
 
 </main>
@@ -219,79 +116,62 @@ const supabase = createClient(
 /* ======================
    VIEW NAVIGATION
 ====================== */
+
 const views = document.querySelectorAll(".view");
 const title = document.getElementById("viewTitle");
+
+window.navigate = function(id){
+  views.forEach(v=>v.hidden=true);
+  document.getElementById(id).hidden=false;
+  title.textContent =
+    id.charAt(0).toUpperCase()+id.slice(1);
+};
 
 document.querySelectorAll("[data-view]").forEach(link=>{
   link.onclick = e=>{
     e.preventDefault();
     navigate(link.dataset.view);
-  }
+  };
 });
 
-function navigate(id){
-  views.forEach(v=>v.hidden=true);
-  document.getElementById(id).hidden=false;
-  title.textContent = id.charAt(0).toUpperCase()+id.slice(1);
-}
-
 /* ======================
-   PORTAL INIT
+   APP LOADER (LOGIN = GATE)
 ====================== */
+
 async function init(){
 
-  const { data:{ session } } = await supabase.auth.getSession();
+  // ✅ ONLY AUTH CHECK REMAINS
+  const { data:{ session } } =
+    await supabase.auth.getSession();
+
   if(!session){
     location.href="/login.html";
     return;
   }
 
   const user = session.user;
-  document.getElementById("userEmail").textContent = user.email;
+
+  document.getElementById("userEmail").textContent =
+    user.email;
+
+  // unlock workspace automatically after login
+  document.getElementById("workspaceLink").hidden = false;
 
   await ensureProfile(user);
   const profile = await loadProfile(user.id);
 
-  // Admin flag for your account only
-  const ADMIN_EMAILS = ['Mpflaa@gmail.com','mpflaa@gmail.com'];
-  if(ADMIN_EMAILS.includes(user.email)) profile.is_admin = true;
-
-  // Approval gate (UNCHANGED)
-  if(!profile.approved){
-    document.body.innerHTML = `<main style="text-align:center;margin-top:80px">
-      <h2>Application Under Review</h2>
-      <p>Access unlocks after approval.</p>
-    </main>`;
-    return;
-  }
-
-  // Role display
   document.getElementById("userRole").textContent =
-    profile.role || "Member";
+    profile?.role || "Member";
 
-  /* ======================
-     NEW — WORKSPACE LINK ENABLE
-     (SAFE EXTENSION POINT)
-  ====================== */
-  const workspaceLink = document.getElementById("workspaceLink");
-  if (workspaceLink) {
-    workspaceLink.hidden = false;
-  }
-
-  // Load features (UNCHANGED)
   loadMembers(user.id);
   loadWeather();
   loadNews();
-
-  // Show admin panel if applicable
-  if(profile.is_admin){
-    showAdminPanel();
-  }
 }
 
 /* ======================
    PROFILE SYSTEM
 ====================== */
+
 async function ensureProfile(user){
   const { data } = await supabase
     .from("profiles")
@@ -302,9 +182,7 @@ async function ensureProfile(user){
   if(!data){
     await supabase.from("profiles").insert({
       id: user.id,
-      email: user.email,
-      approved: false,
-      is_admin: false
+      email: user.email
     });
   }
 }
@@ -315,58 +193,46 @@ async function loadProfile(id){
     .select("*")
     .eq("id", id)
     .single();
+
   return data;
 }
 
 /* ======================
-   MEMBER DIRECTORY
+   MEMBERS
 ====================== */
+
 async function loadMembers(currentId){
   const { data } = await supabase
     .from("profiles")
     .select("name,focus")
-    .eq("approved", true)
     .neq("id", currentId);
 
   const list = document.getElementById("memberList");
   list.innerHTML = "";
 
   data?.forEach(m=>{
-    list.innerHTML +=
-      `<div class="member">
-        <strong>${m.name||"Member"}</strong><br>
-        ${m.focus||""}
+    list.innerHTML += `
+      <div class="member">
+        <strong>${m.name || "Member"}</strong><br>
+        ${m.focus || ""}
       </div>`;
   });
-
-  document.getElementById("memberSearch").oninput = e=>{
-    const q = e.target.value.toLowerCase();
-    list.innerHTML = "";
-
-    data.filter(m=>(m.name||"").toLowerCase().includes(q))
-        .forEach(m=>{
-          list.innerHTML +=
-            `<div class="member">
-              <strong>${m.name||"Member"}</strong><br>
-              ${m.focus||""}
-            </div>`;
-        });
-  }
 }
 
 /* ======================
    WEATHER
 ====================== */
+
 async function loadWeather(){
   try{
     const res = await fetch(
       "https://api.open-meteo.com/v1/forecast?latitude=37.77&longitude=-122.42&current_weather=true"
     );
+
     const data = await res.json();
 
-    document.getElementById("weatherBox").innerHTML =
-      `🌤 ${data.current_weather.temperature}°C — Wind: ${data.current_weather.windspeed} km/h`;
-
+    document.getElementById("weatherBox").textContent =
+      `${data.current_weather.temperature}°C`;
   }catch{
     document.getElementById("weatherBox").textContent =
       "Weather unavailable";
@@ -376,50 +242,23 @@ async function loadWeather(){
 /* ======================
    NEWS
 ====================== */
+
 async function loadNews(){
-  try{
-    const API_KEY = "YOUR_GNEWS_API_KEY";
-    const res = await fetch(
-      `https://gnews.io/api/v4/top-headlines?lang=en&max=5&token=${API_KEY}`
-    );
-
-    const data = await res.json();
-
-    document.getElementById("newsBox").innerHTML =
-      data.articles
-        .map(a=>`<div class="news-item">
-          <a href="${a.url}" target="_blank">${a.title}</a>
-        </div>`)
-        .join("");
-
-  }catch{
-    document.getElementById("newsBox").textContent =
-      "News unavailable";
-  }
-}
-
-/* ======================
-   ADMIN PANEL
-====================== */
-function showAdminPanel(){
-  const nav = document.querySelector(".nav-links");
-
-  const adminBtn = document.createElement("a");
-  adminBtn.href = "/admin.html";
-  adminBtn.textContent = "Admin";
-
-  nav.insertBefore(adminBtn, nav.querySelector("#logoutBtn"));
+  document.getElementById("newsBox").textContent =
+    "Add GNews API key to enable news.";
 }
 
 /* ======================
    LOGOUT
 ====================== */
+
 document.getElementById("logoutBtn").onclick = async ()=>{
   await supabase.auth.signOut();
   location.href="/login.html";
-}
+};
 
 init();
 </script>
+
 </body>
 </html>
