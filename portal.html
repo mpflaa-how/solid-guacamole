@@ -7,90 +7,6 @@
 <title>GFII Portal</title>
 
 <link rel="stylesheet" href="styles.css">
-
-<style>
-/* ===== APP LAYOUT ===== */
-
-body {
-  margin:0;
-  font-family:Segoe UI, sans-serif;
-  background:#f4f6f8;
-}
-
-.app {
-  display:flex;
-  height:100vh;
-}
-
-/* SIDEBAR */
-
-.sidebar {
-  width:240px;
-  background:#0f172a;
-  color:white;
-  padding:20px;
-}
-
-.logo {
-  font-size:20px;
-  font-weight:600;
-  margin-bottom:30px;
-}
-
-.nav button {
-  width:100%;
-  margin:6px 0;
-  padding:12px;
-  background:none;
-  border:none;
-  color:white;
-  text-align:left;
-  cursor:pointer;
-  border-radius:8px;
-}
-
-.nav button:hover {
-  background:#1e293b;
-}
-
-/* MAIN AREA */
-
-.main {
-  flex:1;
-  padding:30px;
-  overflow:auto;
-}
-
-.view {
-  display:none;
-}
-
-.view.active {
-  display:block;
-}
-
-/* CARDS */
-
-.card {
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,.05);
-  margin-bottom:20px;
-}
-
-/* HEADER */
-
-.topbar {
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:20px;
-}
-
-.user {
-  font-weight:500;
-}
-</style>
 </head>
 
 <body>
@@ -98,130 +14,142 @@ body {
 <div class="app">
 
   <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="logo">GFII</div>
+  <aside class="sidebar">
 
-    <div class="nav">
-      <button onclick="showView('home')">Home</button>
-      <button onclick="showView('members')">Members</button>
-      <button onclick="showView('events')">Events</button>
-      <button onclick="showView('profile')">Profile</button>
-    </div>
+    <h2 class="logo">GFII</h2>
 
-    <hr style="margin:20px 0; opacity:.2">
+    <nav class="nav">
+      <button data-view="home">Home</button>
+      <button data-view="members">Members</button>
+      <button data-view="events">Events</button>
+      <button data-view="profile">Profile</button>
+    </nav>
 
+    <hr>
+
+    <!-- Netlify Login -->
     <div data-netlify-identity-menu></div>
-  </div>
 
-  <!-- MAIN CONTENT -->
-  <div class="main">
+  </aside>
 
-    <div class="topbar">
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <header class="topbar">
       <h2 id="viewTitle">Home</h2>
-      <div class="user" id="userDisplay">Guest</div>
-    </div>
+      <div id="userDisplay">Guest</div>
+    </header>
 
-    <!-- HOME / DASHBOARD -->
-    <div id="home" class="view active">
 
+    <!-- HOME -->
+    <section id="home" class="view active">
       <div class="card">
         <h3>Welcome to GFII</h3>
         <p>Your private growth environment.</p>
       </div>
+    </section>
 
-      <div class="card">
-        <h3>Quick Stats</h3>
-        <p>Members Online: 12</p>
-        <p>Upcoming Events: 3</p>
-      </div>
-
-    </div>
 
     <!-- MEMBERS -->
-    <div id="members" class="view">
+    <section id="members" class="view">
       <div class="card">
         <h3>Member Directory</h3>
-        <p>(Future database connection)</p>
+        <p>Coming soon.</p>
       </div>
-    </div>
+    </section>
+
 
     <!-- EVENTS -->
-    <div id="events" class="view">
+    <section id="events" class="view">
       <div class="card">
-        <h3>Upcoming Events</h3>
+        <h3>Events</h3>
         <ul>
-          <li>Weekly Growth Call — Friday</li>
-          <li>Founder Session — March 30</li>
+          <li>Weekly Growth Call</li>
+          <li>Founder Session</li>
         </ul>
       </div>
-    </div>
+    </section>
+
 
     <!-- PROFILE -->
-    <div id="profile" class="view">
+    <section id="profile" class="view">
       <div class="card">
         <h3>Your Profile</h3>
         <p>Email: <span id="userEmail">—</span></p>
       </div>
-    </div>
+    </section>
 
-  </div>
+  </main>
+
 </div>
+
 
 <!-- Netlify Identity -->
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
 <script>
+/* =========================
+   APP NAVIGATION
+========================= */
 
-/* ======================
-   VIEW NAVIGATION
-====================== */
+document.querySelectorAll("[data-view]").forEach(btn => {
 
-function showView(id) {
+  btn.addEventListener("click", () => {
 
-  document.querySelectorAll(".view")
-    .forEach(v => v.classList.remove("active"));
+    const id = btn.dataset.view;
 
-  document.getElementById(id).classList.add("active");
+    document.querySelectorAll(".view")
+      .forEach(v => v.classList.remove("active"));
 
-  document.getElementById("viewTitle").innerText =
-    id.charAt(0).toUpperCase() + id.slice(1);
-}
+    document.getElementById(id).classList.add("active");
 
-/* ======================
-   AUTH HANDLING
-====================== */
+    document.getElementById("viewTitle").innerText =
+      id.charAt(0).toUpperCase() + id.slice(1);
 
-if (window.netlifyIdentity) {
-
-  netlifyIdentity.on("init", user => {
-    updateUser(user);
   });
+
+});
+
+
+/* =========================
+   NETLIFY AUTH (SAFE INIT)
+========================= */
+
+window.addEventListener("load", () => {
+
+  if (!window.netlifyIdentity) return;
+
+  netlifyIdentity.init();
+
+  netlifyIdentity.on("init", user => updateUser(user));
 
   netlifyIdentity.on("login", user => {
     updateUser(user);
     netlifyIdentity.close();
   });
 
-  netlifyIdentity.on("logout", () => {
-    updateUser(null);
-  });
-}
+  netlifyIdentity.on("logout", () => updateUser(null));
+
+});
+
 
 function updateUser(user) {
 
+  const display = document.getElementById("userDisplay");
+  const email = document.getElementById("userEmail");
+
   if (!user) {
-    document.getElementById("userDisplay").innerText = "Guest";
-    document.getElementById("userEmail").innerText = "—";
+    display.textContent = "Guest";
+    email.textContent = "—";
     return;
   }
 
-  document.getElementById("userDisplay").innerText =
+  display.textContent =
     user.user_metadata?.full_name || user.email;
 
-  document.getElementById("userEmail").innerText =
-    user.email;
+  email.textContent = user.email;
 }
-
 </script>
 
 </body>
