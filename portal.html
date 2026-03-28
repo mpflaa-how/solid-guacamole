@@ -2,275 +2,226 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>GFII Portal</title>
 
 <link rel="stylesheet" href="styles.css">
 
 <style>
-body{
+/* ===== APP LAYOUT ===== */
+
+body {
   margin:0;
-  background:#0b0c0f;
-  color:#fff;
-  font-family:Segoe UI,system-ui;
+  font-family:Segoe UI, sans-serif;
+  background:#f4f6f8;
 }
 
-.loader{
-  height:100vh;
+.app {
   display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#aaa;
-}
-
-.app{
-  display:none;
-  grid-template-columns:240px 1fr;
-  min-height:100vh;
+  height:100vh;
 }
 
 /* SIDEBAR */
-.sidebar{
-  background:#0f1116;
-  border-right:1px solid rgba(255,255,255,.05);
-  padding:28px 20px;
+
+.sidebar {
+  width:240px;
+  background:#0f172a;
+  color:white;
+  padding:20px;
 }
 
-.brand{
-  color:#c9a96e;
-  letter-spacing:2px;
-  margin-bottom:40px;
+.logo {
+  font-size:20px;
+  font-weight:600;
+  margin-bottom:30px;
 }
 
-.nav-link{
-  display:block;
+.nav button {
+  width:100%;
+  margin:6px 0;
   padding:12px;
-  margin-bottom:6px;
-  border-radius:8px;
-  color:#aaa;
-  text-decoration:none;
-}
-
-.nav-link:hover{
-  background:rgba(201,169,110,.12);
-  color:#fff;
-}
-
-/* MAIN */
-.main{ padding:40px; }
-
-.dashboard{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-  gap:24px;
-}
-
-.card{
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.05);
-  border-radius:14px;
-  padding:22px;
-}
-
-.card h3{
-  font-size:.8rem;
-  letter-spacing:2px;
-  color:#c9a96e;
-  margin-bottom:18px;
-}
-
-.logout{
   background:none;
-  border:1px solid rgba(255,255,255,.2);
-  color:#fff;
-  padding:8px 14px;
-  border-radius:6px;
+  border:none;
+  color:white;
+  text-align:left;
   cursor:pointer;
+  border-radius:8px;
+}
+
+.nav button:hover {
+  background:#1e293b;
+}
+
+/* MAIN AREA */
+
+.main {
+  flex:1;
+  padding:30px;
+  overflow:auto;
+}
+
+.view {
+  display:none;
+}
+
+.view.active {
+  display:block;
+}
+
+/* CARDS */
+
+.card {
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.05);
+  margin-bottom:20px;
+}
+
+/* HEADER */
+
+.topbar {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
+
+.user {
+  font-weight:500;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOADING SCREEN -->
-<div id="loader" class="loader">Entering GFII…</div>
+<div class="app">
 
-<!-- APP -->
-<div id="app" class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">GFII</div>
 
-<aside class="sidebar">
-  <div class="brand">GFII</div>
-  <a class="nav-link">Dashboard</a>
-  <a class="nav-link">Members</a>
-  <a class="nav-link">Settings</a>
-</aside>
+    <div class="nav">
+      <button onclick="showView('home')">Home</button>
+      <button onclick="showView('members')">Members</button>
+      <button onclick="showView('events')">Events</button>
+      <button onclick="showView('profile')">Profile</button>
+    </div>
 
-<div class="main">
+    <hr style="margin:20px 0; opacity:.2">
 
-<div style="display:flex;justify-content:space-between;margin-bottom:30px;">
-<h2>Member Dashboard</h2>
-<button id="logout-btn" class="logout">Logout</button>
+    <div data-netlify-identity-menu></div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <div class="topbar">
+      <h2 id="viewTitle">Home</h2>
+      <div class="user" id="userDisplay">Guest</div>
+    </div>
+
+    <!-- HOME / DASHBOARD -->
+    <div id="home" class="view active">
+
+      <div class="card">
+        <h3>Welcome to GFII</h3>
+        <p>Your private growth environment.</p>
+      </div>
+
+      <div class="card">
+        <h3>Quick Stats</h3>
+        <p>Members Online: 12</p>
+        <p>Upcoming Events: 3</p>
+      </div>
+
+    </div>
+
+    <!-- MEMBERS -->
+    <div id="members" class="view">
+      <div class="card">
+        <h3>Member Directory</h3>
+        <p>(Future database connection)</p>
+      </div>
+    </div>
+
+    <!-- EVENTS -->
+    <div id="events" class="view">
+      <div class="card">
+        <h3>Upcoming Events</h3>
+        <ul>
+          <li>Weekly Growth Call — Friday</li>
+          <li>Founder Session — March 30</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="profile" class="view">
+      <div class="card">
+        <h3>Your Profile</h3>
+        <p>Email: <span id="userEmail">—</span></p>
+      </div>
+    </div>
+
+  </div>
 </div>
 
-<div class="dashboard">
+<!-- Netlify Identity -->
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
-<section class="card">
-<h3>Your Identity</h3>
-<div id="profile"></div>
-</section>
+<script>
 
-<section class="card">
-<h3>Status</h3>
-<div id="status"></div>
-</section>
+/* ======================
+   VIEW NAVIGATION
+====================== */
 
-<section class="card">
-<h3>Members</h3>
-<div id="members"></div>
-</section>
+function showView(id) {
 
-<section class="card">
-<h3>Access</h3>
-✔ Approved Member<br>
-✔ Profile Initialized<br><br>
-New capabilities unlock progressively.
-</section>
+  document.querySelectorAll(".view")
+    .forEach(v => v.classList.remove("active"));
 
-</div>
-</div>
-</div>
+  document.getElementById(id).classList.add("active");
 
-<script type="module">
-import { createClient } from
-'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-/* =============================
-   SUPABASE
-============================= */
-
-const supabase=createClient(
-'https://adkljqadhghboezfazxz.supabase.co',
-'sb_publishable_cEo9AM4ZL0T21rG-Fn1RlA_u2nW5vj6'
-);
-
-/* DOM */
-const loader=document.getElementById('loader');
-const app=document.getElementById('app');
-const logoutBtn=document.getElementById('logout-btn');
-
-const profileEl=document.getElementById('profile');
-const statusEl=document.getElementById('status');
-const membersEl=document.getElementById('members');
-
-let user;
-
-/* redirect helper */
-const go=(p)=>location.replace(p);
-
-/* =============================
-   BOOT PORTAL
-============================= */
-
-async function boot(){
-
-const {data:{session}}=
-await supabase.auth.getSession();
-
-if(!session){
-go('/login.html');
-return;
+  document.getElementById("viewTitle").innerText =
+    id.charAt(0).toUpperCase() + id.slice(1);
 }
 
-user=session.user;
+/* ======================
+   AUTH HANDLING
+====================== */
 
-/* approval check */
-const {data:approved}=await supabase
-.from('approved_users')
-.select('user_id')
-.eq('user_id',user.id)
-.maybeSingle();
+if (window.netlifyIdentity) {
 
-if(!approved){
-go('/not-approved.html');
-return;
+  netlifyIdentity.on("init", user => {
+    updateUser(user);
+  });
+
+  netlifyIdentity.on("login", user => {
+    updateUser(user);
+    netlifyIdentity.close();
+  });
+
+  netlifyIdentity.on("logout", () => {
+    updateUser(null);
+  });
 }
 
-/* profile check */
-const {data:profile}=await supabase
-.from('profiles')
-.select('*')
-.eq('id',user.id)
-.maybeSingle();
+function updateUser(user) {
 
-if(!profile || !profile.onboarding_complete){
-go('/onboarding.html');
-return;
+  if (!user) {
+    document.getElementById("userDisplay").innerText = "Guest";
+    document.getElementById("userEmail").innerText = "—";
+    return;
+  }
+
+  document.getElementById("userDisplay").innerText =
+    user.user_metadata?.full_name || user.email;
+
+  document.getElementById("userEmail").innerText =
+    user.email;
 }
 
-/* render UI */
-renderProfile(profile);
-renderStatus(profile);
-loadMembers();
-
-/* reveal app */
-loader.style.display='none';
-app.style.display='grid';
-}
-
-/* =============================
-   RENDER
-============================= */
-
-function renderProfile(p){
-profileEl.innerHTML=`
-<div style="font-size:1.4rem;font-weight:600">${p.name}</div>
-<div style="color:#aaa">${p.statement||''}</div>
-<div style="color:#c9a96e;margin-top:8px">${p.focus||'Member'}</div>
-`;
-}
-
-function renderStatus(p){
-statusEl.innerHTML=`
-Alias: ${p.alias||'—'}<br>
-Focus: ${p.focus||'—'}<br>
-Member Since:
-${new Date(p.created_at).toLocaleDateString()}
-`;
-}
-
-/* MEMBERS */
-async function loadMembers(){
-
-const {data}=await supabase
-.from('profiles')
-.select('id,name,focus')
-.neq('id',user.id)
-.limit(5);
-
-if(!data?.length){
-membersEl.innerHTML='No members yet.';
-return;
-}
-
-membersEl.innerHTML=data.map(m=>`
-<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-<strong>${m.name}</strong><br>
-<span style="color:#888">${m.focus||''}</span>
-</div>
-`).join('');
-}
-
-/* LOGOUT */
-logoutBtn.onclick=async()=>{
-await supabase.auth.signOut();
-go('/login.html');
-};
-
-supabase.auth.onAuthStateChange(e=>{
-if(e==='SIGNED_OUT') go('/login.html');
-});
-
-boot();
 </script>
 
 </body>
