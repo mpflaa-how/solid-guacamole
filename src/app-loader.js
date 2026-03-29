@@ -1,6 +1,7 @@
 const APP_INDEX = [
   "/src/apps/journal/manifest.json",
   "/src/apps/finance-os/manifest.json",
+  "/src/apps/forum/manifest.json",
   // add more apps here later
 ];
 
