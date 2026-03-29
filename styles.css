@@ -351,3 +351,148 @@ textarea:focus {
     grid-column: span 1;
   }
 }
+/* ============================= */
+/* APPLY PAGE */
+/* ============================= */
+
+.apply-page {
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.apply-container {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.apply-hero {
+  text-align: center;
+  padding: 60px 40px 40px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.apply-hero h1 {
+  margin-bottom: 12px;
+}
+
+.apply-hero p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #999;
+  margin: 0;
+}
+
+.apply-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  padding: 40px 0 80px;
+  align-items: start;
+}
+
+/* steps */
+
+.apply-details h3 {
+  font-size: 1.1rem;
+  color: #c9a96e;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 32px;
+}
+
+.apply-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.apply-steps li {
+  display: flex;
+  gap: 20px;
+}
+
+.step-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #c9a96e;
+  opacity: 0.4;
+}
+
+.apply-steps strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.apply-steps p {
+  margin: 0;
+  color: #888;
+}
+
+/* form */
+
+.apply-form-wrapper {
+  background: rgba(26, 26, 31, 0.75);
+  border-radius: 14px;
+  padding: 40px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.apply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  color: #888;
+}
+
+/* footer */
+
+.apply-footer {
+  text-align: center;
+  padding: 24px 40px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  color: #555;
+  font-size: 0.85rem;
+}
+
+/* ============================= */
+/* APPLY RESPONSIVE */
+/* ============================= */
+
+@media (max-width: 768px) {
+  .apply-container {
+    padding: 0 20px;
+  }
+
+  .apply-hero {
+    padding: 40px 20px 20px;
+  }
+
+  .apply-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .apply-form-wrapper {
+    padding: 24px;
+  }
+}
