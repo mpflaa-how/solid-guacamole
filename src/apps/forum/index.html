@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Community Forum</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">Community Forum</div>
+  <div class="nav-links">
+    <a href="/src/index.html">← Workspace</a>
+  </div>
+</nav>
+
+<main class="dashboard">
+
+  <!-- Forum Header -->
+  <div class="card">
+    <h3>Community Forum</h3>
+    <p class="profile-muted">Share ideas, ask questions, and connect with the community.</p>
+
+    <button class="btn-primary" id="newThreadBtn">Start New Thread</button>
+  </div>
+
+  <!-- Categories -->
+  <div class="card">
+    <h3>Categories</h3>
+    <div id="categoryList"></div>
+  </div>
+
+  <!-- Threads -->
+  <div class="card">
+    <h3>Threads</h3>
+    <div id="threadList">Select a category to view threads.</div>
+  </div>
+
+  <!-- Posts -->
+  <div class="card">
+    <h3>Posts</h3>
+    <div id="postList">Select a thread to view posts.</div>
+
+    <textarea id="postInput" placeholder="Write a reply..." style="width:100%;height:100px;margin-top:1rem;"></textarea>
+    <button class="btn-primary" id="postSend">Reply</button>
+  </div>
+
+</main>
+
+<!-- New Thread Modal -->
+<div id="threadModal" class="modal" hidden>
+  <div class="modal-content card">
+    <h3>Create New Thread</h3>
+    <input id="threadTitle" placeholder="Thread title" style="width:100%;margin-bottom:0.5rem;">
+    <textarea id="threadBody" placeholder="Thread content" style="width:100%;height:120px;"></textarea>
+    <button class="btn-primary" id="threadCreate">Create Thread</button>
+    <button class="btn-secondary" id="threadCancel">Cancel</button>
+  </div>
+</div>
+
+<script src="./script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Community Forum",
+  "description": "Discuss topics, share ideas, and connect with other members.",
+  "category": "Community",
+  "entry": "/src/apps/forum/index.html"
+}
